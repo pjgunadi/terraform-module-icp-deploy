@@ -36,6 +36,7 @@ ubuntu_install(){
   sudo ufw disable
   sudo apt-get install -y docker-ce
   sudo service docker start
+  pip install --upgrade pip
   echo y | pip uninstall docker-py
 }
 crlinux_install(){
@@ -69,7 +70,7 @@ crlinux_install(){
   echo "{ \"storage-driver\": \"devicemapper\" }" > /etc/docker/daemon.json 
   systemctl enable docker
   systemctl start docker
-  pip install docker-py --upgrade pip
+  pip install --upgrade pip
   echo 32000 1024000000  500  32000 > /proc/sys/kernel/sem
 }
 
