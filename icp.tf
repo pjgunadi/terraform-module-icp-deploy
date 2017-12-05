@@ -17,7 +17,7 @@ resource "null_resource" "icp-cluster" {
   connection {
       host = "${element(local.icp-ips, count.index)}"
       user = "${var.ssh_user}"
-      private_key = "${file(var.ssh_key)}"
+      private_key = "${var.ssh_key}"
   }
    
   # Validate we can do passwordless sudo in case we are not root
@@ -65,7 +65,7 @@ resource "null_resource" "icp-boot" {
   connection {
     host = "${element(var.icp-master, 0)}"
     user = "${var.ssh_user}"
-    private_key = "${file(var.ssh_key)}"
+    private_key = "${var.ssh_key}"
   } 
 
   
@@ -107,7 +107,7 @@ resource "null_resource" "icp-boot" {
       "sudo mkdir -p /opt/ibm/cluster",
       "sudo chown ${var.ssh_user} /opt/ibm/cluster",
       "/tmp/icp-bootmaster-scripts/copy_cluster_skel.sh ${var.icp-version}",
-      "sudo chown ${var.ssh_user} /opt/ibm/cluster/*",
+      "sudo chown -R ${var.ssh_user} /opt/ibm/cluster/*",
       "chmod 600 /opt/ibm/cluster/ssh_key",
       "sudo pip install pyyaml",
       "python /tmp/icp-bootmaster-scripts/load-config.py ${var.config_strategy}"
@@ -134,6 +134,11 @@ resource "null_resource" "icp-boot" {
     content = "${join(",", var.icp-proxy)}"
     destination = "/opt/ibm/cluster/proxylist.txt"
   }  
+
+  provisioner "file" {
+    content = "${join(",", var.icp-management)}"
+    destination = "/opt/ibm/cluster/managementlist.txt"
+  }  
   
   provisioner "remote-exec" {
     inline = [
@@ -143,13 +148,6 @@ resource "null_resource" "icp-boot" {
     ]
   }
   
-  # Check if var.ssh_user is root. If not add ansible_become lines 
-  
-  provisioner "remote-exec" {
-    inline = [
-      
-    ]
-  }
 }
 
 resource "null_resource" "icp-worker-scaler" {
@@ -162,7 +160,7 @@ resource "null_resource" "icp-worker-scaler" {
   connection {
     host = "${element(var.icp-master, 0)}"
     user = "${var.ssh_user}"
-    private_key = "${file(var.ssh_key)}"
+    private_key = "${var.ssh_key}"
   } 
 
   provisioner "file" {

@@ -25,6 +25,11 @@ variable "icp-proxy" {
   description =  "IP addresses of ICP Proxy nodes."
 }
 
+variable "icp-management" { 
+  type        = "list"
+  description =  "IP addresses of ICP Management nodes."
+}
+
 variable "enterprise-edition" {
   description = "Whether to provision enterprise edition (EE) or community edition (CE). EE requires image files to be provided"
   default     = false
@@ -36,7 +41,7 @@ variable "image_file" {
 }
 
 variable  "icp-version" {
-  description = "Version of ICP to provision. For example 1.2.0, 1.2.0-ee, 2.1.0-beta1"
+  description = "Version of ICP to provision. For example 2.1.0, 2.1.0-ee"
   default = "2.1.0"
 }
 
@@ -96,5 +101,5 @@ variable "config_strategy" {
 
 
 locals {
-  icp-ips     = "${concat(var.icp-master, var.icp-proxy, var.icp-worker)}"
+  icp-ips     = "${concat(var.icp-master, var.icp-proxy, var.icp-worker, var.icp-management)}"
 }
