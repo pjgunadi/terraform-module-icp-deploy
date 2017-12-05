@@ -99,6 +99,11 @@ variable "config_strategy" {
   
 }
 
+variable "volume_module" {
+  description = "Depends on volume mount module"
+  default = "mount_volumes"
+}
+
 
 locals {
   icp-ips     = "${concat(var.icp-master, var.icp-proxy, var.icp-worker, var.icp-management)}"
