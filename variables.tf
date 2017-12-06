@@ -102,4 +102,6 @@ variable icp-ips {
   type = "list"
   default = []
 }
-
+variable "boot-node" {
+  description = "ICP Boot node"
+}
