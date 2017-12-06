@@ -98,10 +98,8 @@ variable "config_strategy" {
   default      = "merge"
   
 }
-variable depends_on {
+variable icp-ips {
   type = "list"
   default = []
 }
-locals {
-  icp-ips     = "${concat(var.icp-master, var.icp-proxy, var.icp-worker, var.icp-management)}"
-}
+

@@ -15,7 +15,7 @@ resource "null_resource" "icp-cluster" {
   count = "${var.cluster_size}"
   
   connection {
-      host = "${element(local.icp-ips, count.index)}"
+      host = "${element(var.icp-ips, count.index)}"
       user = "${var.ssh_user}"
       private_key = "${var.ssh_key}"
   }
