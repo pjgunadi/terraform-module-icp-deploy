@@ -55,7 +55,6 @@ resource "null_resource" "icp-cluster" {
   }
 }
 
-
 ## Actions that needs to be taken on boot master only
 resource "null_resource" "icp-boot" {
 
@@ -68,7 +67,6 @@ resource "null_resource" "icp-boot" {
     private_key = "${var.ssh_key}"
   } 
 
-  
   # If this is enterprise edition we'll need to copy the image file over and load it in local repository
   // We'll need to find another workaround while tf does not support count for this
   provisioner "file" {
@@ -77,7 +75,6 @@ resource "null_resource" "icp-boot" {
       destination = "/tmp/${basename(var.image_file)}"
   }
   
-
   provisioner "remote-exec" {
     inline = [
       "mkdir -p /tmp/icp-bootmaster-scripts"
@@ -149,7 +146,7 @@ resource "null_resource" "icp-boot" {
   }
   
 }
-
+/*
 resource "null_resource" "icp-worker-scaler" {
   depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
   
@@ -179,8 +176,6 @@ resource "null_resource" "icp-worker-scaler" {
       "/tmp/icp-bootmaster-scripts/scaleworkers.sh ${var.icp-version}"
     ]
   }
-    
-
-
 }
+*/
 
