@@ -1,6 +1,6 @@
 #!/bin/bash
 DefaultOrg="ibmcom"
-DefaultRepo="cfc-installer"
+DefaultRepo="icp-inception"
 
 # Populates globals $org $repo $tag
 function parse_icpversion() {
