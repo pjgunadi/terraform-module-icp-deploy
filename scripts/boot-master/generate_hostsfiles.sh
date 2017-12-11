@@ -15,6 +15,9 @@ IFS=', ' read -r -a worker_ips <<< $(cat ${WORKDIR}/workerlist.txt)
 declare -a proxy_ips
 IFS=', ' read -r -a proxy_ips <<< $(cat ${WORKDIR}/proxylist.txt)
 
+declare -a management_ips
+IFS=', ' read -r -a management_ips <<< $(cat ${WORKDIR}/managementlist.txt)
+
 ## First gather all the hostnames and link them with ip addresses
 declare -A cluster
 
@@ -30,6 +33,13 @@ for proxy in "${proxy_ips[@]}"; do
   proxies[$proxy]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${proxy} hostname)
   cluster[$proxy]=${proxies[$proxy]}
   printf "%s     %s\n" "$proxy" "${cluster[$proxy]}" >> /tmp/hosts
+done
+
+declare -A managements
+for management in "${management_ips[@]}"; do
+  managements[$management]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${management} hostname)
+  cluster[$management]=${managements[$management]}
+  printf "%s     %s\n" "$management" "${cluster[$management]}" >> /tmp/hosts
 done
 
 declare -A masters
@@ -75,3 +85,7 @@ for proxy in "${proxy_ips[@]}"; do
   echo $proxy >> ${ICPDIR}/hosts
 done
 
+echo '[management]' >> ${ICPDIR}/hosts
+for management in "${management_ips[@]}"; do
+  echo $management >> ${ICPDIR}/hosts
+done
