@@ -15,9 +15,9 @@ resource "null_resource" "icp-cluster" {
   count = "${var.cluster_size}"
   
   connection {
-      host = "${element(local.icp-ips, count.index)}"
+      host = "${element(var.icp-ips, count.index)}"
       user = "${var.ssh_user}"
-      private_key = "${file(var.ssh_key)}"
+      private_key = "${var.ssh_key}"
   }
    
   # Validate we can do passwordless sudo in case we are not root
@@ -55,7 +55,6 @@ resource "null_resource" "icp-cluster" {
   }
 }
 
-
 ## Actions that needs to be taken on boot master only
 resource "null_resource" "icp-boot" {
 
@@ -63,12 +62,11 @@ resource "null_resource" "icp-boot" {
 
   # The first master is always the boot master where we run provisioning jobs from
   connection {
-    host = "${element(var.icp-master, 0)}"
+    host = "${var.boot-node}"
     user = "${var.ssh_user}"
-    private_key = "${file(var.ssh_key)}"
+    private_key = "${var.ssh_key}"
   } 
 
-  
   # If this is enterprise edition we'll need to copy the image file over and load it in local repository
   // We'll need to find another workaround while tf does not support count for this
   provisioner "file" {
@@ -77,7 +75,6 @@ resource "null_resource" "icp-boot" {
       destination = "/tmp/${basename(var.image_file)}"
   }
   
-
   provisioner "remote-exec" {
     inline = [
       "mkdir -p /tmp/icp-bootmaster-scripts"
@@ -107,7 +104,7 @@ resource "null_resource" "icp-boot" {
       "sudo mkdir -p /opt/ibm/cluster",
       "sudo chown ${var.ssh_user} /opt/ibm/cluster",
       "/tmp/icp-bootmaster-scripts/copy_cluster_skel.sh ${var.icp-version}",
-      "sudo chown ${var.ssh_user} /opt/ibm/cluster/*",
+      "sudo chown -R ${var.ssh_user} /opt/ibm/cluster/*",
       "chmod 600 /opt/ibm/cluster/ssh_key",
       "sudo pip install pyyaml",
       "python /tmp/icp-bootmaster-scripts/load-config.py ${var.config_strategy}"
@@ -134,6 +131,11 @@ resource "null_resource" "icp-boot" {
     content = "${join(",", var.icp-proxy)}"
     destination = "/opt/ibm/cluster/proxylist.txt"
   }  
+
+  provisioner "file" {
+    content = "${join(",", var.icp-management)}"
+    destination = "/opt/ibm/cluster/managementlist.txt"
+  }  
   
   provisioner "remote-exec" {
     inline = [
@@ -143,13 +145,6 @@ resource "null_resource" "icp-boot" {
     ]
   }
   
-  # Check if var.ssh_user is root. If not add ansible_become lines 
-  
-  provisioner "remote-exec" {
-    inline = [
-      
-    ]
-  }
 }
 
 resource "null_resource" "icp-worker-scaler" {
@@ -162,7 +157,7 @@ resource "null_resource" "icp-worker-scaler" {
   connection {
     host = "${element(var.icp-master, 0)}"
     user = "${var.ssh_user}"
-    private_key = "${file(var.ssh_key)}"
+    private_key = "${var.ssh_key}"
   } 
 
   provisioner "file" {
@@ -181,8 +176,4 @@ resource "null_resource" "icp-worker-scaler" {
       "/tmp/icp-bootmaster-scripts/scaleworkers.sh ${var.icp-version}"
     ]
   }
-    
-
-
 }
-
