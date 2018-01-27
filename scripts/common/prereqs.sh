@@ -44,7 +44,7 @@ crlinux_install(){
   #Update hostname
 #  hostnamectl set-hostname $HOSTNAME
   #Disable SELINUX
-  sudo sed -i s/^SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config && setenforce 0
+  sudo sed -i s/^SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config && sudo setenforce 0
   sudo systemctl disable firewalld
   sudo systemctl stop firewalld
   echo "vm.max_map_count=262144" | sudo tee /etc/sysctl.d/90-icp.conf
