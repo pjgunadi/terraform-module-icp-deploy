@@ -26,6 +26,7 @@ ubuntu_install(){
 #  sudo hostname $HOSTNAME
 #  sudo echo $HOSTNAME > /etc/hostname
   echo "vm.max_map_count=262144" | sudo tee /etc/sysctl.d/90-icp.conf
+  echo 'net.ipv4.ip_local_port_range="10240 60999"' | sudo tee -a /etc/sysctl.d/90-icp.conf
   sudo sysctl -p /etc/sysctl.d/90-icp.conf
   sudo apt-get -y update
   sudo apt-get install -y apt-transport-https nfs-common ca-certificates curl software-properties-common
@@ -55,6 +56,7 @@ crlinux_install(){
   #yum -y install net-tools
   #sysctl -w vm.max_map_count=262144
   echo "vm.max_map_count=262144" | sudo tee /etc/sysctl.d/90-icp.conf
+  echo 'net.ipv4.ip_local_port_range="10240 60999"' | sudo tee -a /etc/sysctl.d/90-icp.conf
   sudo sysctl -p /etc/sysctl.d/90-icp.conf
   #Disable SELINUX
   sudo sed -i s/^SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config && setenforce 0
