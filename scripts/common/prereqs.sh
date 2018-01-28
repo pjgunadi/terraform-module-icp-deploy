@@ -32,7 +32,7 @@ ubuntu_install(){
   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   sudo apt-get update -y
   sudo apt-get -y upgrade
-  sudo apt-get install -y python python-pip socat #unzip moreutils 
+  sudo apt-get install -y python python-pip socat unzip #moreutils 
   sudo service iptables stop
   sudo ufw disable
   sudo apt-get install -y docker-ce
@@ -52,11 +52,11 @@ crlinux_install(){
   sudo sysctl -p /etc/sysctl.d/90-icp.conf
   #install epel
   sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-  sudo yum -y install python-setuptools policycoreutils-python socat
+  sudo yum -y install python-setuptools policycoreutils-python socat unzip
   sudo easy_install pip
   sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
   #add docker repo and install
-  sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+  #sudo yum install -y yum-utils device-mapper-persistent-data lvm2
   sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
   sudo yum -y install docker-ce
   sudo systemctl enable docker
