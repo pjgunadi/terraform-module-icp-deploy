@@ -56,7 +56,7 @@ crlinux_install(){
   sudo easy_install pip
   sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
   #add docker repo and install
-  #sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+  sudo yum install -y yum-utils device-mapper-persistent-data lvm2
   sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
   sudo yum -y install docker-ce
   sudo systemctl enable docker
