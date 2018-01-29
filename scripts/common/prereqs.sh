@@ -37,7 +37,7 @@ ubuntu_install(){
   sudo ufw disable
   sudo apt-get install -y docker-ce
   sudo service docker start
-  pip install --upgrade pip
+  sudo pip install --upgrade pip
   sudo pip install pyyaml paramiko
   #echo y | pip uninstall docker-py
 }
