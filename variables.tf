@@ -35,6 +35,15 @@ variable "enterprise-edition" {
   default     = false
 }
 
+variable icp_source_server {
+    default = ""
+}
+variable icp_source_user {
+    default = ""
+}
+variable icp_source_password {
+    default = ""
+}
 variable "image_file" {
   description = "Filename of image. Only required for enterprise edition"
   default     = "/dev/null"

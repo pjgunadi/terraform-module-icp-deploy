@@ -38,6 +38,7 @@ ubuntu_install(){
   sudo apt-get install -y docker-ce
   sudo service docker start
   pip install --upgrade pip
+  sudo pip install pyyaml paramiko
   #echo y | pip uninstall docker-py
 }
 crlinux_install(){
@@ -54,6 +55,7 @@ crlinux_install(){
   sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
   sudo yum -y install python-setuptools policycoreutils-python socat unzip
   sudo easy_install pip
+  sudo pip install pyyaml paramiko
   sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
   #add docker repo and install
   sudo yum install -y yum-utils device-mapper-persistent-data lvm2

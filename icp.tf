@@ -69,11 +69,11 @@ resource "null_resource" "icp-boot" {
 
   # If this is enterprise edition we'll need to copy the image file over and load it in local repository
   // We'll need to find another workaround while tf does not support count for this
-  provisioner "file" {
-      # count = "${var.enterprise-edition ? 1 : 0}"
-      source = "${var.enterprise-edition ? var.image_file : "/dev/null" }"
-      destination = "/tmp/${basename(var.image_file)}"
-  }
+  # provisioner "file" {
+  #     # count = "${var.enterprise-edition ? 1 : 0}"
+  #     source = "${var.enterprise-edition ? var.image_file : "/dev/null" }"
+  #     destination = "/tmp/${basename(var.image_file)}"
+  # }
   
   provisioner "remote-exec" {
     inline = [
@@ -100,6 +100,7 @@ resource "null_resource" "icp-boot" {
   provisioner "remote-exec" {
     inline = [
       "chmod a+x /tmp/icp-bootmaster-scripts/*.sh",
+      "/tmp/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
       "/tmp/icp-bootmaster-scripts/load-image.sh ${var.icp-version} /tmp/${basename(var.image_file)}",
       "sudo mkdir -p /opt/ibm/cluster",
       "sudo chown ${var.ssh_user} /opt/ibm/cluster",
