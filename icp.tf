@@ -50,7 +50,8 @@ resource "null_resource" "icp-cluster" {
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
-      "/tmp/icp-common-scripts/docker-user.sh"
+      "/tmp/icp-common-scripts/docker-user.sh",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}"
     ]
   }
 }
@@ -100,9 +101,9 @@ resource "null_resource" "icp-boot" {
   provisioner "remote-exec" {
     inline = [
       "chmod a+x /tmp/icp-bootmaster-scripts/*.sh",
-      "sudo mkdir -p /opt/ibm/cluster/images && sudo chown -R ${var.ssh_user} /opt/ibm/cluster",
-      "/tmp/icp-bootmaster-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /opt/ibm/cluster/images/${basename(var.image_file)}",
-      "/tmp/icp-bootmaster-scripts/load-image.sh ${var.icp-version} /opt/ibm/cluster/images/${basename(var.image_file)}",
+      "/tmp/icp-bootmaster-scripts/load-image.sh ${var.icp-version} /tmp/${basename(var.image_file)}",
+      "sudo mkdir -p /opt/ibm/cluster",
+      "sudo chown ${var.ssh_user} /opt/ibm/cluster",      
       "/tmp/icp-bootmaster-scripts/copy_cluster_skel.sh ${var.icp-version}",
       "sudo chown -R ${var.ssh_user} /opt/ibm/cluster/*",
       "chmod 600 /opt/ibm/cluster/ssh_key",
