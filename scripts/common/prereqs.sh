@@ -32,7 +32,7 @@ ubuntu_install(){
   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   sudo apt-get update -y
   sudo apt-get -y upgrade
-  sudo apt-get install -y python python-pip socat unzip #moreutils 
+  sudo apt-get install -y python python-pip socat unzip moreutils 
   sudo service iptables stop
   sudo ufw disable
   sudo apt-get install -y docker-ce
