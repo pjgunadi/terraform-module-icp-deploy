@@ -147,7 +147,7 @@ resource "null_resource" "icp-boot" {
   }
   
 }
-/*
+
 resource "null_resource" "icp-worker-scaler" {
   depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
   
@@ -178,5 +178,5 @@ resource "null_resource" "icp-worker-scaler" {
     ]
   }
 }
-*/
+
 
