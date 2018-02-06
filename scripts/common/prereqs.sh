@@ -40,7 +40,7 @@ ubuntu_install(){
   sudo pip install --upgrade pip
   sudo pip install pyyaml paramiko
   sudo modprobe dm_thin_pool
-  echo dm_thin_pool | sudo tee -a /etc/modules
+  [ -f /etc/modules ] && grep dm_thin_pool /etc/modules || echo dm_thin_pool | sudo tee -a /etc/modules
   #echo y | pip uninstall docker-py
 }
 crlinux_install(){
@@ -66,7 +66,7 @@ crlinux_install(){
   sudo systemctl enable docker
   sudo systemctl start docker
   sudo modprobe dm_thin_pool
-  echo dm_thin_pool | sudo tee -a /etc/modules-load.d/dm_thin_pool.conf
+  [ -f /etc/modules-load.d/dm_thin_pool.conf ] && grep dm_thin_pool /etc/modules-load.d/dm_thin_pool.conf || echo dm_thin_pool | sudo tee -a /etc/modules-load.d/dm_thin_pool.conf
 }
 
 if [ "$OSLEVEL" == "ubuntu" ]; then
