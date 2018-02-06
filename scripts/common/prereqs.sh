@@ -32,13 +32,15 @@ ubuntu_install(){
   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   sudo apt-get update -y
   sudo apt-get -y upgrade
-  sudo apt-get install -y python python-pip socat unzip moreutils 
+  sudo apt-get install -y python python-pip socat unzip moreutils glusterfs-client
   sudo service iptables stop
   sudo ufw disable
   sudo apt-get install -y docker-ce
   sudo service docker start
   sudo pip install --upgrade pip
   sudo pip install pyyaml paramiko
+  sudo modprobe dm_thin_pool
+  echo dm_thin_pool | sudo tee -a /etc/modules
   #echo y | pip uninstall docker-py
 }
 crlinux_install(){
@@ -53,7 +55,7 @@ crlinux_install(){
   sudo sysctl -p /etc/sysctl.d/90-icp.conf
   #install epel
   sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-  sudo yum -y install python-setuptools policycoreutils-python socat unzip
+  sudo yum -y install python-setuptools policycoreutils-python socat unzip glusterfs-client
   sudo easy_install pip
   sudo pip install pyyaml paramiko
   sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
@@ -63,6 +65,8 @@ crlinux_install(){
   sudo yum -y install docker-ce
   sudo systemctl enable docker
   sudo systemctl start docker
+  sudo modprobe dm_thin_pool
+  echo dm_thin_pool | sudo tee -a /etc/modules-load.d/dm_thin_pool.conf
 }
 
 if [ "$OSLEVEL" == "ubuntu" ]; then
