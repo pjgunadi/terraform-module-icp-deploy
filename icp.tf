@@ -157,7 +157,7 @@ resource "null_resource" "icp-worker-scaler" {
   }
   
   connection {
-    host = "${element(var.icp-master, 0)}"
+    host = "${var.boot-node}"
     user = "${var.ssh_user}"
     private_key = "${var.ssh_key}"
   } 
