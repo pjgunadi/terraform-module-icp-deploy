@@ -87,12 +87,9 @@ resource "null_resource" "icp-boot" {
   }
   
   # store config yaml if it was specified
-  # provisioner "file" {
-  #   source       = "${var.icp_config_file}"
-  #   destination = "/tmp/config.yaml"
-  # }
   provisioner "file" {
-    content       = "${var.icp_config_file}"
+    source       = "${var.icp_config_file}"
+#   content       = "${var.icp_config_file}"
     destination = "/tmp/config.yaml"
   }
   
