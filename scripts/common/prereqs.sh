@@ -31,8 +31,7 @@ ubuntu_install(){
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   sudo apt-get update -y
-  DEBIAN_FRONTEND=noninteractive sudo apt-get upgrade -yq
-  #sudo apt-get -y upgrade
+  sudo apt-get -y upgrade
   sudo apt-get install -y python python-pip socat unzip moreutils glusterfs-client
   sudo service iptables stop
   sudo ufw disable
