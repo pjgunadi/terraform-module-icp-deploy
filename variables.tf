@@ -114,3 +114,29 @@ variable icp-ips {
 variable "boot-node" {
   description = "ICP Boot node"
 }
+#Gluster Variables
+variable install_gluster {
+  default = false
+}
+variable gluster_size {
+    default = 3
+}
+variable gluster_ips {
+    default = []
+}
+variable gluster_svc_ips {
+    default = []
+}
+variable device_name {
+    default = "/dev/sdb"
+}
+variable heketi_ip {
+    default = ""
+}
+variable heketi_svc_ip {
+    default = ""
+}
+variable cluster_name {}
+variable k8_version {
+    default = "v1.8.3"
+}

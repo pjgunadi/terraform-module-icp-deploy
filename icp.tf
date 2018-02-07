@@ -143,7 +143,6 @@ resource "null_resource" "icp-boot" {
     inline = [
       "/tmp/icp-bootmaster-scripts/generate_hostsfiles.sh",
       "/tmp/icp-bootmaster-scripts/start_install.sh ${var.icp-version}"
-      
     ]
   }
   
@@ -180,4 +179,141 @@ resource "null_resource" "icp-worker-scaler" {
   }
 }
 
+resource "tls_private_key" "heketikey" {
+  count = "${var.install_gluster ? 1 : 0}"
+  algorithm = "RSA"
 
+  provisioner "local-exec" {
+    command = "cat > heketi_key <<EOL\n${tls_private_key.heketikey.private_key_pem}\nEOL"
+  }
+}
+
+resource "null_resource" "create_gluster" {
+  count = "${var.install_gluster ? var.gluster_size : 0}"
+  depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
+
+  connection {
+      host = "${element(var.gluster_ips, count.index)}"
+      user = "${var.ssh_user}"
+      private_key = "${var.ssh_key}"
+  }
+ 
+  provisioner "file" {
+    source = "${path.module}/scripts/gluster/creategluster.sh"
+    destination = "/tmp/creategluster.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo mkdir /root/.ssh && sudo chmod 700 /root/.ssh",
+      "echo \"${tls_private_key.heketikey.public_key_openssh}\" | sudo tee -a /root/.ssh/authorized_keys && sudo chmod 600 /root/.ssh/authorized_keys",
+      "chmod +x /tmp/creategluster.sh && sudo /tmp/creategluster.sh",
+      "echo Installation of Gluster is Completed"
+    ]
+  }
+}
+
+resource "null_resource" "create_heketi" {
+  count = "${var.install_gluster ? 1 : 0}"  
+  depends_on = ["null_resource.icp-boot","null_resource.create_gluster"]
+
+  connection {
+    host = "${var.heketi_ip}"
+    user = "${var.ssh_user}"
+    #password = "${var.ssh_password}"
+    private_key = "${var.ssh_key}"
+  }
+
+  provisioner "file" {
+    content = "${tls_private_key.heketikey.private_key_pem}"
+    destination = "~/heketi_key"
+  }
+
+  provisioner "file" {
+    source = "${path.module}/scripts/gluster/createheketi.sh"
+    destination = "/tmp/createheketi.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "[ -f ~/heketi_key ] && sudo mkdir -p /etc/heketi && sudo mv ~/heketi_key /etc/heketi/ && sudo chmod 600 /etc/heketi/heketi_key",
+      "[ -f /tmp/createheketi.sh ] && chmod +x /tmp/createheketi.sh && sudo /tmp/createheketi.sh",
+      "sudo heketi-cli cluster create | tee /tmp/create_cluster.log"
+    ]
+  }
+
+}
+
+data "template_file" "create_node_script" {
+  count      = "${var.install_gluster ? var.gluster_size : 0}"
+
+  template = "${file("${path.module}/scripts/gluster/create_node.tpl")}"
+  vars {
+    nodeip = "${element(var.gluster_svc_ips, count.index)}"
+    nodefile = "${format("/tmp/nodeid-%01d.txt", count.index + 1) }"
+    device_name = "${var.device_name}"
+  }
+}
+
+resource "null_resource" "create_node" {
+  count      = "${var.install_gluster ? var.gluster_size : 0}"  
+  depends_on = ["null_resource.create_gluster","null_resource.create_heketi"]
+
+  connection {
+    host = "${var.heketi_ip}"
+    user = "${var.ssh_user}"
+    #password = "${var.ssh_password}"
+    private_key = "${var.ssh_key}"
+  }
+
+  provisioner "file" {
+    content = "${element(data.template_file.create_node_script.*.rendered, count.index)}"
+    destination = "/tmp/createnode-${count.index}.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/createnode-${count.index}.sh && sudo /tmp/createnode-${count.index}.sh"
+    ]
+  }
+}
+
+data "template_file" "storage_class" {
+  count = "${var.install_gluster ? 1 : 0}"
+
+  template = "${file("${path.module}/scripts/gluster/storageclass.yaml.tpl")}"
+  vars {
+    heketi_svc_ip = "${var.heketi_svc_ip}"
+  }
+}
+
+resource "null_resource" "create_storage_class" {
+  count = "${var.install_gluster ? 1 : 0}"
+  depends_on = ["null_resource.icp-boot","null_resource.create_heketi"]
+
+  connection {
+    host = "${var.boot-node}"
+    user = "${var.ssh_user}"
+    #password = "${var.ssh_password}"
+    private_key = "${var.ssh_key}"
+  }
+
+  provisioner "file" {
+    content = "${data.template_file.storage_class.rendered}"
+    destination = "/tmp/storageclass.yaml"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "which kubectl || curl -LO https://storage.googleapis.com/kubernetes-release/release/${var.k8_version}/bin/linux/amd64/kubectl",
+      "[ -f ./kubectl ] && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl",
+      "sudo kubectl config set-cluster ${var.cluster_name} --server=https://${var.boot-node}:8001 --insecure-skip-tls-verify=true",
+      "sudo kubectl config set-context ${var.cluster_name} --cluster=${var.cluster_name}",
+      "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=/opt/ibm/cluster/cfc-certs/kubecfg.crt --client-key=/opt/ibm/cluster/cfc-certs/kubecfg.key",
+      "sudo kubectl config set-context ${var.cluster_name} --user=${var.cluster_name}",
+      "sudo kubectl config use-context ${var.cluster_name}",
+      "sudo kubectl create -f /tmp/storageclass.yaml",
+      "echo completed"
+    ]
+  }
+}
