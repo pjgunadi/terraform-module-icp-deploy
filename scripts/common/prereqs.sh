@@ -32,7 +32,7 @@ ubuntu_install(){
   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   sudo apt-get update -y
   sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -yq
-  #sudo apt-get -y upgrade
+  sudo apt-get -y upgrade
   sudo apt-get install -y python python-pip socat unzip moreutils glusterfs-client
   sudo service iptables stop
   sudo ufw disable
