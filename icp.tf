@@ -18,6 +18,9 @@ resource "null_resource" "icp-cluster" {
       host = "${element(var.icp-ips, count.index)}"
       user = "${var.ssh_user}"
       private_key = "${var.ssh_key}"
+      bastion_host = "${var.bastion_host}"
+      bastion_user = "${var.bastion_user}"
+      bastion_private_key = "${var.bastion_private_key}"
   }
    
   # Validate we can do passwordless sudo in case we are not root
@@ -66,6 +69,9 @@ resource "null_resource" "icp-boot" {
     host = "${var.boot-node}"
     user = "${var.ssh_user}"
     private_key = "${var.ssh_key}"
+    bastion_host = "${var.bastion_host}"
+    bastion_user = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   } 
 
   # If this is enterprise edition we'll need to copy the image file over and load it in local repository
@@ -159,6 +165,9 @@ resource "null_resource" "icp-worker-scaler" {
     host = "${var.boot-node}"
     user = "${var.ssh_user}"
     private_key = "${var.ssh_key}"
+    bastion_host = "${var.bastion_host}"
+    bastion_user = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   } 
 
   provisioner "file" {
@@ -193,9 +202,12 @@ resource "null_resource" "create_gluster" {
   depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
 
   connection {
-      host = "${element(var.gluster_ips, count.index)}"
-      user = "${var.ssh_user}"
-      private_key = "${var.ssh_key}"
+    host = "${element(var.gluster_ips, count.index)}"
+    user = "${var.ssh_user}"
+    private_key = "${var.ssh_key}"
+    bastion_host = "${var.bastion_host}"
+    bastion_user = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   }
  
   provisioner "file" {
@@ -222,6 +234,9 @@ resource "null_resource" "create_heketi" {
     user = "${var.ssh_user}"
     #password = "${var.ssh_password}"
     private_key = "${var.ssh_key}"
+    bastion_host = "${var.bastion_host}"
+    bastion_user = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   }
 
   provisioner "file" {
@@ -264,6 +279,9 @@ resource "null_resource" "create_node" {
     user = "${var.ssh_user}"
     #password = "${var.ssh_password}"
     private_key = "${var.ssh_key}"
+    bastion_host = "${var.bastion_host}"
+    bastion_user = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   }
 
   provisioner "file" {
@@ -296,6 +314,9 @@ resource "null_resource" "create_storage_class" {
     user = "${var.ssh_user}"
     #password = "${var.ssh_password}"
     private_key = "${var.ssh_key}"
+    bastion_host = "${var.bastion_host}"
+    bastion_user = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   }
 
   provisioner "file" {
