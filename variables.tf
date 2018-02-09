@@ -114,6 +114,15 @@ variable icp-ips {
 variable "boot-node" {
   description = "ICP Boot node"
 }
+variable "bastion_host" {
+  default = ""
+}
+variable "bastion_user" {
+  default = ""
+}
+variable "bastion_private_key" {
+  default = ""
+}
 #Gluster Variables
 variable install_gluster {
   default = false

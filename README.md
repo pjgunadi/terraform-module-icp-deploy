@@ -6,6 +6,7 @@ with few modifications:
 - Separate Local IP and Public IP variables
 - Added boot-node IP variable
 - Added script to download ICP enterprise edition installation file
+- Added option to install GlusterFS
 
 ## Compatibility
 This module has been tested on:
