@@ -78,8 +78,8 @@ then
     $kubectl drain $ip --force
     docker run -e LICENSE=accept --net=host -v "$ICPDIR":/installer/cluster ${org}/${repo}:${tag} uninstall -l $ip
     $kubectl delete node $ip
-    sudo sed -i "/^${ip} /d" /etc/hosts
-    sudo sed -i "/^${ip} /d" /opt/ibm/cluster/hosts
+    sudo sed -i "/^${ip}.*$/d" /etc/hosts
+    sudo sed -i "/^${ip}.*$/d" /opt/ibm/cluster/hosts
   done
   
 fi
