@@ -27,11 +27,13 @@ ubuntu_install(){
   sudo apt-get install -y apt-transport-https nfs-common ca-certificates curl software-properties-common
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  sudo apt-get update -y
-  sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -yq
-  sudo apt-get -y upgrade
+  ## Attempt to avoid probelems when dpkg requires configuration
+  export DEBIAN_FRONTEND=noninteractive
+  export DEBIAN_PRIORITY=critical
+  sudo -E apt-get -y update
+  sudo -E apt-get -yq -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
+  #sudo apt-get -y upgrade
   sudo apt-get install -y python python-pip socat unzip moreutils glusterfs-client
-  sudo apt-get install -y thin-provisioning-tools lvm2
   sudo service iptables stop
   sudo ufw disable
   sudo apt-get install -y docker-ce
