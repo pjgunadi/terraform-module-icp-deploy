@@ -15,9 +15,6 @@ IFS=', ' read -r -a worker_ips <<< $(cat ${WORKDIR}/workerlist.txt)
 declare -a proxy_ips
 IFS=', ' read -r -a proxy_ips <<< $(cat ${WORKDIR}/proxylist.txt)
 
-declare -a management_ips
-IFS=', ' read -r -a management_ips <<< $(cat ${WORKDIR}/managementlist.txt)
-
 ## First gather all the hostnames and link them with ip addresses
 declare -A cluster
 
@@ -35,13 +32,6 @@ for proxy in "${proxy_ips[@]}"; do
   printf "%s     %s\n" "$proxy" "${cluster[$proxy]}" >> /tmp/hosts
 done
 
-declare -A managements
-for management in "${management_ips[@]}"; do
-  managements[$management]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${management} hostname)
-  cluster[$management]=${managements[$management]}
-  printf "%s     %s\n" "$management" "${cluster[$management]}" >> /tmp/hosts
-done
-
 declare -A masters
 for m in "${master_ips[@]}"; do
   # No need to ssh to self
@@ -55,8 +45,19 @@ for m in "${master_ips[@]}"; do
   printf "%s     %s\n" "$m" "${cluster[$m]}" >> /tmp/hosts
 done
 
-
-
+# Add management nodes if separate from master nodes
+if [[ -s ${WORKDIR}/managementlist.txt ]]
+then
+  declare -a management_ips
+  IFS=', ' read -r -a management_ips <<< $(cat ${WORKDIR}/managementlist.txt)
+  
+  declare -A mngrs
+  for m in "${management_ips[@]}"; do
+    mngrs[$m]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${m} hostname)
+    cluster[$m]=${mngrs[$m]}
+    printf "%s     %s\n" "$m" "${cluster[$m]}" >> /tmp/hosts
+  done
+fi
 
 ## Update all hostfiles in all nodes in the cluster
 for node in "${!cluster[@]}"; do
@@ -75,17 +76,24 @@ for master in "${master_ips[@]}"; do
   echo $master >> ${ICPDIR}/hosts
 done
 
+echo  >> ${ICPDIR}/hosts
 echo '[worker]' >> ${ICPDIR}/hosts
 for worker in "${worker_ips[@]}"; do
   echo $worker >> ${ICPDIR}/hosts
 done
 
+echo  >> ${ICPDIR}/hosts
 echo '[proxy]' >> ${ICPDIR}/hosts
 for proxy in "${proxy_ips[@]}"; do
   echo $proxy >> ${ICPDIR}/hosts
 done
 
-echo '[management]' >> ${ICPDIR}/hosts
-for management in "${management_ips[@]}"; do
-  echo $management >> ${ICPDIR}/hosts
-done
+# Add management host entries if separate from master nodes
+if [[ ! -z ${management_ips} ]]
+then
+  echo  >> ${ICPDIR}/hosts
+  echo '[management]' >> ${ICPDIR}/hosts
+  for m in "${management_ips[@]}"; do
+    echo $m >> ${ICPDIR}/hosts
+  done
+fi
