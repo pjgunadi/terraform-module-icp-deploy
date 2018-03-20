@@ -36,7 +36,9 @@ ubuntu_install(){
   sudo apt-get install -y python python-pip socat unzip moreutils glusterfs-client
   sudo service iptables stop
   sudo ufw disable
-  sudo apt-get install -y docker-ce
+  DOCKER_VERSION=$(apt-cache madison docker-ce | grep 17.09 | awk -F\| 'NR==1 {print $2}' | tr -d ' ')
+  sudo apt-get install -y docker-ce=$DOCKER_VERSION
+  #sudo apt-get install -y docker-ce
   sudo service docker start
   sudo pip install --upgrade pip
   sudo pip install pyyaml paramiko
