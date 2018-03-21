@@ -37,10 +37,14 @@ ubuntu_install(){
   sudo service iptables stop
   sudo ufw disable
   if ! docker --version ; then
-    DOCKER_VERSION=$(apt-cache madison docker-ce | grep 17.09 | awk -F\| 'NR==1 {print $2}' | tr -d ' ')
-    sudo apt-get install -y docker-ce=$DOCKER_VERSION
+    DOCKER_VERSION=$(sudo apt-cache madison docker-ce | grep 17.09 | awk -F\| 'NR==1 {print $2}' | tr -d ' ')
+    if [ "$DOCKER_VERSION" != "" ]; then
+      sudo apt-get install -y docker-ce=$DOCKER_VERSION
+    else
+      sudo apt-get install -y docker-ce
+    fi
   fi
-  #sudo apt-get install -y docker-ce
+ 
   sudo service docker start
   sudo pip install --upgrade pip
   sudo pip install pyyaml paramiko
@@ -66,9 +70,12 @@ crlinux_install(){
   if ! docker --version ; then
     sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    DOCKER_VERSION=$(yum list docker-ce --showduplicates | sort -r | grep 17.09 | awk -F" " 'NR==1 {print $2}' | tr -d ' ')
-    sudo yum -y install docker-ce-$DOCKER_VERSION
-    #sudo yum -y install docker-ce
+    DOCKER_VERSION=$(sudo yum list docker-ce --showduplicates | sort -r | grep 17.09 | awk -F" " 'NR==1 {print $2}' | tr -d ' ')
+    if [ "$DOCKER_VERSION" != "" ]; then
+      sudo yum -y install docker-ce-$DOCKER_VERSION
+    else
+      sudo yum -y install docker-ce
+    fi
   fi
   sudo systemctl enable docker
   sudo systemctl start docker
