@@ -36,8 +36,10 @@ ubuntu_install(){
   sudo apt-get install -y python python-pip socat unzip moreutils glusterfs-client
   sudo service iptables stop
   sudo ufw disable
-  DOCKER_VERSION=$(apt-cache madison docker-ce | grep 17.09 | awk -F\| 'NR==1 {print $2}' | tr -d ' ')
-  sudo apt-get install -y docker-ce=$DOCKER_VERSION
+  if ! docker --version ; then
+    DOCKER_VERSION=$(apt-cache madison docker-ce | grep 17.09 | awk -F\| 'NR==1 {print $2}' | tr -d ' ')
+    sudo apt-get install -y docker-ce=$DOCKER_VERSION
+  fi
   #sudo apt-get install -y docker-ce
   sudo service docker start
   sudo pip install --upgrade pip
@@ -59,11 +61,15 @@ crlinux_install(){
   sudo yum -y install python-setuptools policycoreutils-python socat unzip glusterfs-client
   sudo easy_install pip
   sudo pip install pyyaml paramiko
-  sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
-  #add docker repo and install
   sudo yum install -y yum-utils device-mapper-persistent-data lvm2
-  sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-  sudo yum -y install docker-ce
+  #add docker repo and install
+  if ! docker --version ; then
+    sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
+    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    DOCKER_VERSION=$(yum list docker-ce --showduplicates | sort -r | grep 17.09 | awk -F" " 'NR==1 {print $2}' | tr -d ' ')
+    sudo yum -y install docker-ce-$DOCKER_VERSION
+    #sudo yum -y install docker-ce
+  fi
   sudo systemctl enable docker
   sudo systemctl start docker
   sudo modprobe dm_thin_pool
