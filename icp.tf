@@ -135,7 +135,7 @@ resource "null_resource" "icp-boot" {
     destination = "/opt/ibm/cluster/managementlist.txt"
   }
   provisioner "file" {
-    content     = "${length(var.icp-va) == 0 ? "" : join(",", var.icp-va)}"
+    content     = "${length(var.icp-va) == 0 ? "null" : join(",", var.icp-va)}"
     destination = "/opt/ibm/cluster/valist.txt"
   }
   provisioner "remote-exec" {
