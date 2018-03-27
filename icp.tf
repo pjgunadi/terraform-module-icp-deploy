@@ -134,6 +134,10 @@ resource "null_resource" "icp-boot" {
     content     = "${join(",", var.icp-management)}"
     destination = "/opt/ibm/cluster/managementlist.txt"
   }
+  provisioner "file" {
+    content     = "${join(",", var.icp-va)}"
+    destination = "/opt/ibm/cluster/valist.txt"
+  }
   provisioner "remote-exec" {
     inline = [
       "/tmp/icp-bootmaster-scripts/generate_hostsfiles.sh",

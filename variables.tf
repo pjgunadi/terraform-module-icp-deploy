@@ -1,33 +1,39 @@
 # Username and password for the initial admin user
-variable "icpuser" { 
+variable "icpuser" {
   type        = "string"
   description = "Username of initial admin user. Default: Admin"
-  default     = "admin" 
+  default     = "admin"
 }
-variable "icppassword" { 
+
+variable "icppassword" {
   type        = "string"
   description = "Password of initial admin user. Default: Admin"
-  default     = "admin" 
+  default     = "admin"
 }
 
-variable "icp-master" { 
+variable "icp-master" {
   type        = "list"
-  description =  "IP address of ICP Masters. First master will also be boot master. CE edition only supports single master "
+  description = "IP address of ICP Masters. First master will also be boot master. CE edition only supports single master "
 }
 
-variable "icp-worker" { 
+variable "icp-worker" {
   type        = "list"
-  description =  "IP addresses of ICP Worker nodes."
+  description = "IP addresses of ICP Worker nodes."
 }
 
-variable "icp-proxy" { 
+variable "icp-proxy" {
   type        = "list"
-  description =  "IP addresses of ICP Proxy nodes."
+  description = "IP addresses of ICP Proxy nodes."
 }
 
-variable "icp-management" { 
+variable "icp-management" {
   type        = "list"
-  description =  "IP addresses of ICP Management nodes."
+  description = "IP addresses of ICP Management nodes."
+}
+
+variable "icp-va" {
+  type        = "list"
+  description = "IP addresses of ICP VA nodes."
 }
 
 variable "enterprise-edition" {
@@ -36,22 +42,25 @@ variable "enterprise-edition" {
 }
 
 variable icp_source_server {
-    default = ""
+  default = ""
 }
+
 variable icp_source_user {
-    default = ""
+  default = ""
 }
+
 variable icp_source_password {
-    default = ""
+  default = ""
 }
+
 variable "image_file" {
   description = "Filename of image. Only required for enterprise edition"
   default     = "/dev/null"
 }
 
-variable  "icp-version" {
+variable "icp-version" {
   description = "Version of ICP to provision. For example 2.1.0, 2.1.0-ee"
-  default = "2.1.0"
+  default     = "2.1.0"
 }
 
 variable "ssh_user" {
@@ -103,49 +112,62 @@ variable "icp_configuration" {
 }
 
 variable "config_strategy" {
-  description  = "Strategy for original config.yaml shipped with ICP. Default is merge, everything else means override"
-  default      = "merge"
-  
+  description = "Strategy for original config.yaml shipped with ICP. Default is merge, everything else means override"
+  default     = "merge"
 }
+
 variable icp-ips {
-  type = "list"
+  type    = "list"
   default = []
 }
+
 variable "boot-node" {
   description = "ICP Boot node"
 }
+
 variable "bastion_host" {
   default = ""
 }
+
 variable "bastion_user" {
   default = ""
 }
+
 variable "bastion_private_key" {
   default = ""
 }
+
 #Gluster Variables
 variable install_gluster {
   default = false
 }
+
 variable gluster_size {
-    default = 3
+  default = 3
 }
+
 variable gluster_ips {
-    default = []
+  default = []
 }
+
 variable gluster_svc_ips {
-    default = []
+  default = []
 }
+
 variable device_name {
-    default = "/dev/sdb"
+  default = "/dev/sdb"
 }
+
 variable heketi_ip {
-    default = ""
+  default = ""
 }
+
 variable heketi_svc_ip {
-    default = ""
+  default = ""
 }
+
 variable cluster_name {}
+
 variable k8_version {
-    default = "v1.8.3"
+  default = "v1.8.3"
 }

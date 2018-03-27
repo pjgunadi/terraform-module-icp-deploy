@@ -59,6 +59,19 @@ then
   done
 fi
 
+# Add VA nodes if required
+if [[ -s ${WORKDIR}/valist.txt ]]; then
+  declare -a va_ips
+  IFS=', ' read -r -a va_ips <<< $(cat ${WORKDIR}/valist.txt)
+  
+  declare -A vas
+  for v in "${va_ips[@]}"; do
+    mngrs[$v]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${v} hostname)
+    cluster[$v]=${vas[$v]}
+    printf "%s     %s\n" "$v" "${cluster[$v]}" >> /tmp/hosts
+  done
+fi
+
 ## Update all hostfiles in all nodes in the cluster
 for node in "${!cluster[@]}"; do
   # No need to ssh to self
@@ -95,5 +108,15 @@ then
   echo '[management]' >> ${ICPDIR}/hosts
   for m in "${management_ips[@]}"; do
     echo $m >> ${ICPDIR}/hosts
+  done
+fi
+
+# Add VA host entries if required
+if [[ ! -z ${va_ips} ]]
+then
+  echo  >> ${ICPDIR}/hosts
+  echo '[va]' >> ${ICPDIR}/hosts
+  for v in "${va_ips[@]}"; do
+    echo $v >> ${ICPDIR}/hosts
   done
 fi

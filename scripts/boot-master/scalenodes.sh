@@ -110,7 +110,7 @@ then
     ${org}/${repo}:${tag} install -l ${list}
   else
     docker run -e LICENSE=accept --net=host -v "/opt/ibm/cluster":/installer/cluster \
-    ${org}/${repo}:${tag} install ${NODETYPE} -l ${list}
+    ${org}/${repo}:${tag} ${NODETYPE} -l ${list}
   fi
 fi
 
