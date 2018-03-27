@@ -271,6 +271,11 @@ resource "null_resource" "create_gluster" {
   }
 
   provisioner "file" {
+    source      = "${path.module}/scripts/common/prereqs.sh"
+    destination = "/tmp/prereqs.sh"
+  }
+
+  provisioner "file" {
     source      = "${path.module}/scripts/gluster/creategluster.sh"
     destination = "/tmp/creategluster.sh"
   }
@@ -279,6 +284,7 @@ resource "null_resource" "create_gluster" {
     inline = [
       "sudo mkdir /root/.ssh && sudo chmod 700 /root/.ssh",
       "echo \"${tls_private_key.heketikey.public_key_openssh}\" | sudo tee -a /root/.ssh/authorized_keys && sudo chmod 600 /root/.ssh/authorized_keys",
+      "chmod +x /tmp/prereqs.sh && /tmp/prereqs.sh",
       "chmod +x /tmp/creategluster.sh && sudo /tmp/creategluster.sh",
       "echo Installation of Gluster is Completed",
     ]
