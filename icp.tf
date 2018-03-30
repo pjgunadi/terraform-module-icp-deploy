@@ -169,18 +169,18 @@ resource "null_resource" "icp-management-scaler" {
     bastion_private_key = "${var.bastion_private_key}"
   }
 
-  provisioner "file" {
-    content     = "${join(",", var.icp-management)}"
-    destination = "/tmp/managementlist.txt"
-  }
+  # provisioner "file" {
+  #   content     = "${join(",", var.icp-management)}"
+  #   destination = "/tmp/managementlist.txt"
+  # }
 
   provisioner "file" {
     source      = "${path.module}/scripts/boot-master/scalenodes.sh"
     destination = "/tmp/icp-bootmaster-scripts/scalenodes.sh"
   }
-
   provisioner "remote-exec" {
     inline = [
+      "echo -n ${join(",", var.icp-management)} > /tmp/managementlist.txt",
       "chmod a+x /tmp/icp-bootmaster-scripts/scalenodes.sh",
       "/tmp/icp-bootmaster-scripts/scalenodes.sh ${var.icp-version} management",
     ]
