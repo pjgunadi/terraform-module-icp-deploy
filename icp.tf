@@ -130,17 +130,13 @@ resource "null_resource" "icp-boot" {
     content     = "${join(",", var.icp-proxy)}"
     destination = "/opt/ibm/cluster/proxylist.txt"
   }
-  # provisioner "file" {
-  #   content     = "${join(",", var.icp-management)}"
-  #   destination = "/opt/ibm/cluster/managementlist.txt"
-  # }
   provisioner "file" {
     content     = "${length(var.icp-management) == 0 ? "null" : join(",", var.icp-management)}"
     destination = "${length(var.icp-management) == 0 ? "/dev/null" : "/opt/ibm/cluster/managementlist.txt"}"
   }
   provisioner "file" {
-    content     = "${length(var.icp-va) == 0 ? "null" : join(",", var.icp-va)}"
-    destination = "${length(var.icp-va) == 0 ? "/dev/null" : "/opt/ibm/cluster/valist.txt"}"
+    content     = "${length(split(",",join(",",var.icp-va))) == 0 ? "null" : join(",", var.icp-va)}"
+    destination = "${length(split(",",join(",",var.icp-va))) == 0 ? "/dev/null" : "/opt/ibm/cluster/valist.txt"}"
   }
   provisioner "remote-exec" {
     inline = [
