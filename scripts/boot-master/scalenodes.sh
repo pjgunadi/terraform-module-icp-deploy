@@ -29,12 +29,12 @@ declare -a removed
 
 # As a precausion, if either list is empty, something might have gone wrong and we should exit in case we delete all nodes in error
 if [ ${#newlist[@]} -eq 0 ]; then
-  echo "Couldn't find any entries in new list of workers. Exiting'"
-  exit 1
+  echo "Couldn't find any entries in new list of $NODETYPE. Exiting'"
+  exit 0
 fi
 if [ ${#oldlist[@]} -eq 0 ]; then
-  echo "Couldn't find any entries in old list of workers. Exiting'"
-  exit 1
+  echo "Couldn't find any entries in old list of $NODETYPE. Exiting'"
+  exit 0
 fi
 
 
