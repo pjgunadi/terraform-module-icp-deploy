@@ -66,7 +66,7 @@ if [[ -s ${WORKDIR}/valist.txt ]]; then
   
   declare -A vas
   for v in "${va_ips[@]}"; do
-    mngrs[$v]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${v} hostname)
+    vas[$v]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${v} hostname)
     cluster[$v]=${vas[$v]}
     printf "%s     %s\n" "$v" "${cluster[$v]}" >> /tmp/hosts
   done
