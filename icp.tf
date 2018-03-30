@@ -130,16 +130,22 @@ resource "null_resource" "icp-boot" {
     content     = "${join(",", var.icp-proxy)}"
     destination = "/opt/ibm/cluster/proxylist.txt"
   }
-  provisioner "file" {
-    content     = "${length(var.icp-management) == 0 ? "null" : join(",", var.icp-management)}"
-    destination = "${length(var.icp-management) == 0 ? "/dev/null" : "/opt/ibm/cluster/managementlist.txt"}"
-  }
-  provisioner "file" {
-    content     = "${length(split(",",join(",",var.icp-va))) == 0 ? "null" : join(",", var.icp-va)}"
-    destination = "${length(split(",",join(",",var.icp-va))) == 0 ? "/dev/null" : "/opt/ibm/cluster/valist.txt"}"
-  }
+
+  # provisioner "file" {
+  #   content     = "${length(var.icp-management) == 0 ? "null" : join(",", var.icp-management)}"
+  #   destination = "${length(var.icp-management) == 0 ? "/dev/null" : "/opt/ibm/cluster/managementlist.txt"}"
+  # }
+  # provisioner "file" {
+  #   content     = "${length(var.icp-va) == 0 ? "null" : join(",", var.icp-va)}"
+  #   destination = "${length(var.icp-va) == 0 ? "/dev/null" : "/opt/ibm/cluster/valist.txt"}"
+  # }
+
+  # Since the file provisioner deals badly with empty lists, we'll create the optional management nodes differently
+  # Later we may refactor to use this method for all node types for consistency  
   provisioner "remote-exec" {
     inline = [
+      "echo -n ${join(",", var.icp-management)} > /opt/ibm/cluster/managementlist.txt",
+      "echo -n ${join(",", var.icp-va)} > /opt/ibm/cluster/valist.txt",
       "/tmp/icp-bootmaster-scripts/generate_hostsfiles.sh",
       "/tmp/icp-bootmaster-scripts/start_install.sh ${var.icp-version}",
     ]
