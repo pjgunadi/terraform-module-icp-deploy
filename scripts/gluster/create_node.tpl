@@ -1,5 +1,5 @@
 #!/bin/bash
-CLUSTERNAME=$(heketi-cli cluster list | awk -F: -v key="Id" '$1==key {print $2}')
+CLUSTERNAME=$(heketi-cli cluster list | awk -F: -v key="Id" '$1==key {print $2}' | awk -F" " '{print $1}')
 NODEIP="${nodeip}"
 NODEFILE="${nodefile}"
 if [ -n "$CLUSTERNAME" ]; then
