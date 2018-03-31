@@ -16,7 +16,7 @@ sed -i "s/\"keyfile\": \".*\"/\"keyfile\": \"\/etc\/heketi\/heketi_key\"/" /etc/
 sed -i "s/\"user\": \"sshuser\"/\"user\": \"root\"/" /etc/heketi/heketi.json
 sed -i "s/\"port\": \".*22\"/\"port\": \"22\"/" /etc/heketi/heketi.json
 sed -i "s/\"fstab\": \".*\"/\"fstab\": \"\/etc\/fstab\"/" /etc/heketi/heketi.json
-if [ "$1" == "" ]; then
+if [ "$1" != "" ]; then
   sed -i "s/\"use_auth\": .*/\"use_auth\": true,/" /etc/heketi/heketi.json
   sed -i "s/\"key\": \".*\"/\"key\": \"$1\"/" /etc/heketi/heketi.json
 fi
