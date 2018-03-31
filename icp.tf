@@ -431,8 +431,5 @@ resource "null_resource" "create_storage_class" {
       "sudo kubectl create -f /tmp/storageclass.yaml",
       "echo completed",
     ]
-
-    #"which kubectl || curl -LO https://storage.googleapis.com/kubernetes-release/release/${var.k8_version}/bin/linux/amd64/kubectl",
-    #      "[ -f ./kubectl ] && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl",
   }
 }
