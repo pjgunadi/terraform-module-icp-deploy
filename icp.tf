@@ -403,8 +403,7 @@ resource "null_resource" "create_storage_class" {
 
   provisioner "remote-exec" {
     inline = [
-      "which kubectl || curl -LO https://storage.googleapis.com/kubernetes-release/release/${var.k8_version}/bin/linux/amd64/kubectl",
-      "[ -f ./kubectl ] && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl",
+      "which kubectl || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin ${var.icp_installer_image}:${var.icp-version} cp /usr/local/bin/kubectl /hostbin/",
       "sudo kubectl config set-cluster ${var.cluster_name} --server=https://${var.boot-node}:8001 --insecure-skip-tls-verify=true",
       "sudo kubectl config set-context ${var.cluster_name} --cluster=${var.cluster_name}",
       "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=/opt/ibm/cluster/cfc-certs/kubecfg.crt --client-key=/opt/ibm/cluster/cfc-certs/kubecfg.key",
@@ -413,5 +412,8 @@ resource "null_resource" "create_storage_class" {
       "sudo kubectl create -f /tmp/storageclass.yaml",
       "echo completed",
     ]
+
+    #"which kubectl || curl -LO https://storage.googleapis.com/kubernetes-release/release/${var.k8_version}/bin/linux/amd64/kubectl",
+    #      "[ -f ./kubectl ] && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl",
   }
 }

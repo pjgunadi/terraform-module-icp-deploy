@@ -168,6 +168,11 @@ variable heketi_svc_ip {
 
 variable cluster_name {}
 
-variable k8_version {
-  default = "v1.8.3"
+variable icp_installer_image {
+  default = "ibmcom/icp-inception"
 }
+
+# variable k8_version {
+#   default = "v1.8.3"
+# }
+

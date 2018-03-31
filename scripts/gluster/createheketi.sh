@@ -1,10 +1,10 @@
 #!/bin/bash
 
 cd /tmp/
-#wget https://github.com/heketi/heketi/releases/download/v5.0.1/heketi-v5.0.1.linux.amd64.tar.gz
-#tar -zxvf heketi-v5.0.1.linux.amd64.tar.gz
-wget https://github.com/heketi/heketi/releases/download/v6.0.0/heketi-v6.0.0.linux.amd64.tar.gz
-tar -zxvf heketi-v6.0.0.linux.amd64.tar.gz
+wget https://github.com/heketi/heketi/releases/download/v5.0.1/heketi-v5.0.1.linux.amd64.tar.gz
+tar -zxvf heketi-v5.0.1.linux.amd64.tar.gz
+# wget https://github.com/heketi/heketi/releases/download/v6.0.0/heketi-v6.0.0.linux.amd64.tar.gz
+# tar -zxvf heketi-v6.0.0.linux.amd64.tar.gz
 mkdir /etc/heketi
 mkdir /var/lib/heketi
 cp heketi/heketi.json /etc/heketi/
