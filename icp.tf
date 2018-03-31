@@ -326,8 +326,9 @@ resource "null_resource" "create_heketi" {
   provisioner "remote-exec" {
     inline = [
       "[ -f ~/heketi_key ] && sudo mkdir -p /etc/heketi && sudo mv ~/heketi_key /etc/heketi/ && sudo chmod 600 /etc/heketi/heketi_key",
-      "[ -f /tmp/createheketi.sh ] && chmod +x /tmp/createheketi.sh && sudo /tmp/createheketi.sh",
-      "sudo heketi-cli cluster create | tee /tmp/create_cluster.log",
+      "[ -f /tmp/createheketi.sh ] && chmod +x /tmp/createheketi.sh && sudo /tmp/createheketi.sh ${var.heketi_admin_pwd}",
+      "sleep 2",
+      "sudo heketi-cli --user admin --secret ${var.heketi_admin_pwd} cluster create | tee /tmp/create_cluster.log",
     ]
   }
 }
@@ -338,9 +339,10 @@ data "template_file" "create_node_script" {
   template = "${file("${path.module}/scripts/gluster/create_node.tpl")}"
 
   vars {
-    nodeip      = "${element(var.gluster_svc_ips, count.index)}"
-    nodefile    = "${format("/tmp/nodeid-%01d.txt", count.index + 1) }"
-    device_name = "${var.device_name}"
+    nodeip           = "${element(var.gluster_svc_ips, count.index)}"
+    nodefile         = "${format("/tmp/nodeid-%01d.txt", count.index + 1) }"
+    device_name      = "${var.device_name}"
+    heketi_admin_pwd = "${var.heketi_admin_pwd}"
   }
 }
 
@@ -371,13 +373,24 @@ resource "null_resource" "create_node" {
   }
 }
 
+data "template_file" "glusterfs_secret" {
+  count = "${var.install_gluster ? 1 : 0}"
+
+  template = "${file("${path.module}/scripts/gluster/glusterfs-secret.yaml.tpl")}"
+
+  vars {
+    heketi_admin_pwd = "${base64encode(var.heketi_admin_pwd)}"
+  }
+}
+
 data "template_file" "storage_class" {
   count = "${var.install_gluster ? 1 : 0}"
 
   template = "${file("${path.module}/scripts/gluster/storageclass.yaml.tpl")}"
 
   vars {
-    heketi_svc_ip = "${var.heketi_svc_ip}"
+    heketi_svc_ip       = "${var.heketi_svc_ip}"
+    gluster_volume_type = "${var.gluster_volume_type}"
   }
 }
 
@@ -397,6 +410,11 @@ resource "null_resource" "create_storage_class" {
   }
 
   provisioner "file" {
+    content     = "${data.template_file.glusterfs_secret.rendered}"
+    destination = "/tmp/glusterfs-secret.yaml"
+  }
+
+  provisioner "file" {
     content     = "${data.template_file.storage_class.rendered}"
     destination = "/tmp/storageclass.yaml"
   }
@@ -409,6 +427,7 @@ resource "null_resource" "create_storage_class" {
       "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=/opt/ibm/cluster/cfc-certs/kubecfg.crt --client-key=/opt/ibm/cluster/cfc-certs/kubecfg.key",
       "sudo kubectl config set-context ${var.cluster_name} --user=${var.cluster_name}",
       "sudo kubectl config use-context ${var.cluster_name}",
+      "sudo kubectl create -f /tmp/glusterfs-secret.yaml",
       "sudo kubectl create -f /tmp/storageclass.yaml",
       "echo completed",
     ]

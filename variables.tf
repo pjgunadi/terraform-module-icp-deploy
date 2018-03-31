@@ -172,7 +172,10 @@ variable icp_installer_image {
   default = "ibmcom/icp-inception"
 }
 
-# variable k8_version {
-#   default = "v1.8.3"
-# }
+variable gluster_volume_type {
+  default = "none"
+}
 
+variable heketi_admin_pwd {
+  default = "none"
+}

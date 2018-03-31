@@ -8,5 +8,7 @@ metadata:
 provisioner: kubernetes.io/glusterfs
 parameters:
   resturl: "http://${heketi_svc_ip}:8080"
-  restauthenabled: "false"
-  volumetype: none
+  restuser: "admin"
+  secretNamespace: "default"
+  secretName: "heketi-secret"
+  volumetype: ${gluster_volume_type}
