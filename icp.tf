@@ -251,7 +251,7 @@ resource "null_resource" "icp-boot" {
 }
 
 resource "null_resource" "icp-proxy-scaler" {
-  depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
+  depends_on = ["null_resource.icp-proxy", "null_resource.icp-boot"]
 
   triggers {
     nodes = "${join(",", var.icp-proxy)}"
@@ -285,7 +285,7 @@ resource "null_resource" "icp-proxy-scaler" {
 }
 
 resource "null_resource" "icp-management-scaler" {
-  depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
+  depends_on = ["null_resource.icp-management", "null_resource.icp-boot"]
 
   triggers {
     nodes = "${join(",", var.icp-management)}"
