@@ -64,8 +64,11 @@ for nip in "${newlist[@]}"; do
   fi
 
   if [[ ! " ${oldlist[@]} " =~ " ${nip} " ]]; then
-    # whatever you want to do when arr doesn't contain value
-    added+=(${nip})
+    # do not remove when ip is a master node
+    if [[ ! " ${masterlist[@]} " =~ " ${nip} " ]]; then
+      # whatever you want to do when arr doesn't contain value
+      added+=(${nip})
+    fi
   fi
 done
 
