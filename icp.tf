@@ -460,8 +460,9 @@ resource "tls_private_key" "heketikey" {
 }
 
 resource "null_resource" "create_gluster" {
-  count      = "${var.install_gluster ? var.gluster_size : 0}"
-  depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
+  count = "${var.install_gluster ? var.gluster_size : 0}"
+
+  #depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
 
   connection {
     host                = "${element(var.gluster_ips, count.index)}"
@@ -471,17 +472,14 @@ resource "null_resource" "create_gluster" {
     bastion_user        = "${var.bastion_user}"
     bastion_private_key = "${var.bastion_private_key}"
   }
-
   provisioner "file" {
     source      = "${path.module}/scripts/common/prereqs.sh"
     destination = "/tmp/prereqs.sh"
   }
-
   provisioner "file" {
     source      = "${path.module}/scripts/gluster/creategluster.sh"
     destination = "/tmp/creategluster.sh"
   }
-
   provisioner "remote-exec" {
     inline = [
       "sudo mkdir /root/.ssh && sudo chmod 700 /root/.ssh",
@@ -495,7 +493,7 @@ resource "null_resource" "create_gluster" {
 
 resource "null_resource" "create_heketi" {
   count      = "${var.install_gluster ? 1 : 0}"
-  depends_on = ["null_resource.icp-boot", "null_resource.create_gluster"]
+  depends_on = ["null_resource.create_gluster"]
 
   connection {
     host = "${var.heketi_ip}"
