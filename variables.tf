@@ -92,6 +92,9 @@ variable "cluster_size" {
   description = "Define total clustersize. Workaround for terraform issue #10857."
 }
 
+variable "proxy_size" {}
+variable "management_size" {}
+
 /*
   ICP Configuration 
   Configuration file is generated from items in the following order

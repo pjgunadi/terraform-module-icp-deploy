@@ -10,8 +10,7 @@ resource "tls_private_key" "icpkey" {
 
 ## Actions that has to be taken on all nodes in the cluster
 resource "null_resource" "icp-cluster" {
-  #count = "${var.cluster_size}"
-  count = "${length(var.icp-ips)}"
+  count = "${var.cluster_size}"
 
   connection {
     host                = "${element(var.icp-ips, count.index)}"
@@ -60,7 +59,7 @@ resource "null_resource" "icp-cluster" {
 
 # Proxy Nodes
 resource "null_resource" "icp-proxy" {
-  count = "${length(var.icp-proxy)}"
+  count = "${var.proxy_size}"
 
   connection {
     host                = "${element(var.icp-proxy, count.index)}"
@@ -109,7 +108,7 @@ resource "null_resource" "icp-proxy" {
 
 # Management Nodes
 resource "null_resource" "icp-management" {
-  count = "${length(var.icp-management)}"
+  count = "${var.management_size}"
 
   connection {
     host                = "${element(var.icp-management, count.index)}"
