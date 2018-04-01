@@ -10,7 +10,8 @@ resource "tls_private_key" "icpkey" {
 
 ## Actions that has to be taken on all nodes in the cluster
 resource "null_resource" "icp-cluster" {
-  count = "${var.cluster_size}"
+  #count = "${var.cluster_size}"
+  count = "${length(compact(var.icp-ips))}"
 
   connection {
     host                = "${element(var.icp-ips, count.index)}"
