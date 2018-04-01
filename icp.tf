@@ -154,7 +154,6 @@ resource "null_resource" "icp-boot" {
 
 resource "null_resource" "icp-management-scaler" {
   depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
-  count      = "${length(var.icp-management) > 0 ? 1 : 0}"
 
   triggers {
     nodes = "${join(",", var.icp-management)}"
