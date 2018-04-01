@@ -94,6 +94,8 @@ variable "cluster_size" {
 
 variable "proxy_size" {}
 variable "management_size" {}
+variable "va_size" {}
+variable "worker_size" {}
 
 /*
   ICP Configuration 
@@ -120,8 +122,9 @@ variable "config_strategy" {
 }
 
 variable icp-ips {
-  type    = "list"
-  default = []
+  type        = "list"
+  description = "Core ICP Components: Master and Worker nodes"
+  default     = []
 }
 
 variable "boot-node" {

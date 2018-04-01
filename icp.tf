@@ -24,7 +24,7 @@ resource "null_resource" "icp-cluster" {
   # Validate we can do passwordless sudo in case we are not root
   provisioner "remote-exec" {
     inline = [
-      "sudo -n echo This will fail unless we have passwordless sudo access",
+      "sudo -n echo Test connection. It works.",
     ]
   }
 
@@ -73,7 +73,7 @@ resource "null_resource" "icp-proxy" {
   # Validate we can do passwordless sudo in case we are not root
   provisioner "remote-exec" {
     inline = [
-      "sudo -n echo This will fail unless we have passwordless sudo access",
+      "sudo -n echo Test connection. It works.",
     ]
   }
 
@@ -122,7 +122,105 @@ resource "null_resource" "icp-management" {
   # Validate we can do passwordless sudo in case we are not root
   provisioner "remote-exec" {
     inline = [
-      "sudo -n echo This will fail unless we have passwordless sudo access",
+      "sudo -n echo Test connection. It works.",
+    ]
+  }
+
+  provisioner "file" {
+    content     = "${var.generate_key ? tls_private_key.icpkey.public_key_openssh : file(var.icp_pub_keyfile)}"
+    destination = "/tmp/icpkey"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /tmp/icp-common-scripts",
+    ]
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/scripts/common/"
+    destination = "/tmp/icp-common-scripts"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p ~/.ssh",
+      "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
+      "chmod a+x /tmp/icp-common-scripts/*",
+      "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
+      "/tmp/icp-common-scripts/docker-user.sh",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
+    ]
+  }
+}
+
+# VA Nodes
+resource "null_resource" "icp-va" {
+  count = "${var.va_size}"
+
+  connection {
+    host                = "${element(var.icp-va, count.index)}"
+    user                = "${var.ssh_user}"
+    private_key         = "${var.ssh_key}"
+    bastion_host        = "${var.boot-node}"
+    bastion_user        = "${var.ssh_user}"
+    bastion_private_key = "${var.ssh_key}"
+  }
+
+  # Validate we can do passwordless sudo in case we are not root
+  provisioner "remote-exec" {
+    inline = [
+      "sudo -n echo Test connection. It works.",
+    ]
+  }
+
+  provisioner "file" {
+    content     = "${var.generate_key ? tls_private_key.icpkey.public_key_openssh : file(var.icp_pub_keyfile)}"
+    destination = "/tmp/icpkey"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /tmp/icp-common-scripts",
+    ]
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/scripts/common/"
+    destination = "/tmp/icp-common-scripts"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p ~/.ssh",
+      "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
+      "chmod a+x /tmp/icp-common-scripts/*",
+      "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
+      "/tmp/icp-common-scripts/docker-user.sh",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
+    ]
+  }
+}
+
+# Worker Nodes
+resource "null_resource" "icp-worker" {
+  count = "${var.worker_size}"
+
+  connection {
+    host                = "${element(var.icp-worker, count.index)}"
+    user                = "${var.ssh_user}"
+    private_key         = "${var.ssh_key}"
+    bastion_host        = "${var.boot-node}"
+    bastion_user        = "${var.ssh_user}"
+    bastion_private_key = "${var.ssh_key}"
+  }
+
+  # Validate we can do passwordless sudo in case we are not root
+  provisioner "remote-exec" {
+    inline = [
+      "sudo -n echo Test connection. It works.",
     ]
   }
 
@@ -157,7 +255,7 @@ resource "null_resource" "icp-management" {
 
 ## Actions that needs to be taken on boot master only
 resource "null_resource" "icp-boot" {
-  depends_on = ["null_resource.icp-cluster", "null_resource.icp-proxy", "null_resource.icp-management"]
+  depends_on = ["null_resource.icp-cluster", "null_resource.icp-proxy", "null_resource.icp-management", "null_resource.icp-va", "null_resource.icp-worker"]
 
   # The first master is always the boot master where we run provisioning jobs from
   connection {
@@ -319,7 +417,7 @@ resource "null_resource" "icp-management-scaler" {
 }
 
 resource "null_resource" "icp-worker-scaler" {
-  depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
+  depends_on = ["null_resource.icp-worker", "null_resource.icp-boot"]
 
   triggers {
     nodes = "${join(",", var.icp-worker)}"
