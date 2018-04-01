@@ -57,9 +57,107 @@ resource "null_resource" "icp-cluster" {
   }
 }
 
+# Proxy Nodes
+resource "null_resource" "icp-proxy" {
+  count = "${length(compact(var.icp-proxy))}"
+
+  connection {
+    host                = "${element(var.icp-proxy, count.index)}"
+    user                = "${var.ssh_user}"
+    private_key         = "${var.ssh_key}"
+    bastion_host        = "${var.boot-node}"
+    bastion_user        = "${var.ssh_user}"
+    bastion_private_key = "${var.ssh_key}"
+  }
+
+  # Validate we can do passwordless sudo in case we are not root
+  provisioner "remote-exec" {
+    inline = [
+      "sudo -n echo This will fail unless we have passwordless sudo access",
+    ]
+  }
+
+  provisioner "file" {
+    content     = "${var.generate_key ? tls_private_key.icpkey.public_key_openssh : file(var.icp_pub_keyfile)}"
+    destination = "/tmp/icpkey"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /tmp/icp-common-scripts",
+    ]
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/scripts/common/"
+    destination = "/tmp/icp-common-scripts"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p ~/.ssh",
+      "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
+      "chmod a+x /tmp/icp-common-scripts/*",
+      "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
+      "/tmp/icp-common-scripts/docker-user.sh",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
+    ]
+  }
+}
+
+# Management Nodes
+resource "null_resource" "icp-management" {
+  count = "${length(compact(var.icp-management))}"
+
+  connection {
+    host                = "${element(var.icp-management, count.index)}"
+    user                = "${var.ssh_user}"
+    private_key         = "${var.ssh_key}"
+    bastion_host        = "${var.boot-node}"
+    bastion_user        = "${var.ssh_user}"
+    bastion_private_key = "${var.ssh_key}"
+  }
+
+  # Validate we can do passwordless sudo in case we are not root
+  provisioner "remote-exec" {
+    inline = [
+      "sudo -n echo This will fail unless we have passwordless sudo access",
+    ]
+  }
+
+  provisioner "file" {
+    content     = "${var.generate_key ? tls_private_key.icpkey.public_key_openssh : file(var.icp_pub_keyfile)}"
+    destination = "/tmp/icpkey"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /tmp/icp-common-scripts",
+    ]
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/scripts/common/"
+    destination = "/tmp/icp-common-scripts"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p ~/.ssh",
+      "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
+      "chmod a+x /tmp/icp-common-scripts/*",
+      "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
+      "/tmp/icp-common-scripts/docker-user.sh",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
+    ]
+  }
+}
+
 ## Actions that needs to be taken on boot master only
 resource "null_resource" "icp-boot" {
-  depends_on = ["null_resource.icp-cluster"]
+  depends_on = ["null_resource.icp-cluster", "null_resource.icp-proxy", "null_resource.icp-management"]
 
   # The first master is always the boot master where we run provisioning jobs from
   connection {
@@ -152,40 +250,6 @@ resource "null_resource" "icp-boot" {
   }
 }
 
-resource "null_resource" "icp-management-scaler" {
-  depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
-
-  triggers {
-    nodes = "${join(",", var.icp-management)}"
-  }
-
-  connection {
-    host                = "${var.boot-node}"
-    user                = "${var.ssh_user}"
-    private_key         = "${var.ssh_key}"
-    bastion_host        = "${var.bastion_host}"
-    bastion_user        = "${var.bastion_user}"
-    bastion_private_key = "${var.bastion_private_key}"
-  }
-
-  # provisioner "file" {
-  #   content     = "${join(",", var.icp-management)}"
-  #   destination = "/tmp/managementlist.txt"
-  # }
-
-  provisioner "file" {
-    source      = "${path.module}/scripts/boot-master/scalenodes.sh"
-    destination = "/tmp/icp-bootmaster-scripts/scalenodes.sh"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "echo -n ${join(",", var.icp-management)} > /tmp/managementlist.txt",
-      "chmod a+x /tmp/icp-bootmaster-scripts/scalenodes.sh",
-      "/tmp/icp-bootmaster-scripts/scalenodes.sh ${var.icp-version} management",
-    ]
-  }
-}
-
 resource "null_resource" "icp-proxy-scaler" {
   depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
 
@@ -216,6 +280,40 @@ resource "null_resource" "icp-proxy-scaler" {
     inline = [
       "chmod a+x /tmp/icp-bootmaster-scripts/scalenodes.sh",
       "/tmp/icp-bootmaster-scripts/scalenodes.sh ${var.icp-version} proxy",
+    ]
+  }
+}
+
+resource "null_resource" "icp-management-scaler" {
+  depends_on = ["null_resource.icp-cluster", "null_resource.icp-boot"]
+
+  triggers {
+    nodes = "${join(",", var.icp-management)}"
+  }
+
+  connection {
+    host                = "${var.boot-node}"
+    user                = "${var.ssh_user}"
+    private_key         = "${var.ssh_key}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
+  }
+
+  # provisioner "file" {
+  #   content     = "${join(",", var.icp-management)}"
+  #   destination = "/tmp/managementlist.txt"
+  # }
+
+  provisioner "file" {
+    source      = "${path.module}/scripts/boot-master/scalenodes.sh"
+    destination = "/tmp/icp-bootmaster-scripts/scalenodes.sh"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "echo -n ${join(",", var.icp-management)} > /tmp/managementlist.txt",
+      "chmod a+x /tmp/icp-bootmaster-scripts/scalenodes.sh",
+      "/tmp/icp-bootmaster-scripts/scalenodes.sh ${var.icp-version} management",
     ]
   }
 }

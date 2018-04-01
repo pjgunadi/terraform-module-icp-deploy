@@ -12,17 +12,21 @@ if [ "$NODETYPE" == "" ]; then
   NODETYPE="worker"
 fi
 NEWLIST=/tmp/${NODETYPE}list.txt
-OLDLIST=/opt/ibm/cluster/${NODETYPE}list.txt
+OLDLIST=${ICPDIR}/${NODETYPE}list.txt
+MASTERLIST=${ICPDIR}/masterlist.txt
 
 #Backward Compatibility
 COMPVER=$(echo ${tag} | awk -F- '{print $1}')
 
-# Compare new and old list of workers
+# Compare new and old list of nodes
 declare -a newlist
 IFS=', ' read -r -a newlist <<< $(cat ${NEWLIST})
 
 declare -a oldlist
 IFS=', ' read -r -a oldlist <<< $(cat ${OLDLIST})
+
+declare -a masterlist
+IFS=', ' read -r -a masterlist <<< $(cat ${MASTERLIST})
 
 declare -a added
 declare -a removed
@@ -38,19 +42,22 @@ if [ ${#oldlist[@]} -eq 0 ]; then
 fi
 
 
-# Cycle through old ips to find removed workers
+# Cycle through old ips to find removed nodes
 for oip in "${oldlist[@]}"; do
   if [[ "${newlist[@]}" =~ "${oip}" ]]; then
     echo "${oip} is still here"
   fi
 
   if [[ ! " ${newlist[@]} " =~ " ${oip} " ]]; then
-    # whatever you want to do when arr doesn't contain value
-    removed+=(${oip})
+    # do not remove when ip is a master node
+    if [[ ! " ${masterlist[@]} " =~ " ${oip} " ]]; then
+      # whatever you want to do when arr doesn't contain value
+      removed+=(${oip})
+    fi
   fi
 done
 
-# Cycle through new ips to find added workers
+# Cycle through new ips to find added nodes
 for nip in "${newlist[@]}"; do
   if [[ "${oldlist[@]}" =~ "${nip}" ]]; then
     echo "${nip} is still here"
@@ -66,7 +73,7 @@ done
 
 if [[ -n ${removed} ]]
 then
-  echo "removing workers: ${removed[@]}"
+  echo "removing ${NODETYPE}: ${removed[@]}"
   
   ### Setup kubectl
   
