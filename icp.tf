@@ -46,13 +46,14 @@ resource "null_resource" "icp-cluster" {
 
   provisioner "remote-exec" {
     inline = [
+      "sudo mkdir -p ${var.install_dir}/images; sudo chown -R ${var.ssh_user} ${var.install_dir}",
       "mkdir -p ~/.ssh",
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -95,13 +96,14 @@ resource "null_resource" "icp-proxy" {
 
   provisioner "remote-exec" {
     inline = [
+      "sudo mkdir -p ${var.install_dir}/images; sudo chown -R ${var.ssh_user} ${var.install_dir}",
       "mkdir -p ~/.ssh",
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -144,13 +146,14 @@ resource "null_resource" "icp-management" {
 
   provisioner "remote-exec" {
     inline = [
+      "sudo mkdir -p ${var.install_dir}/images; sudo chown -R ${var.ssh_user} ${var.install_dir}",
       "mkdir -p ~/.ssh",
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -193,13 +196,14 @@ resource "null_resource" "icp-va" {
 
   provisioner "remote-exec" {
     inline = [
+      "sudo mkdir -p ${var.install_dir}/images; sudo chown -R ${var.ssh_user} ${var.install_dir}",
       "mkdir -p ~/.ssh",
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -242,13 +246,14 @@ resource "null_resource" "icp-worker" {
 
   provisioner "remote-exec" {
     inline = [
+      "sudo mkdir -p ${var.install_dir}/images; sudo chown -R ${var.ssh_user} ${var.install_dir}",
       "mkdir -p ~/.ssh",
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} /tmp/${basename(var.image_file)}",
+      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -299,12 +304,12 @@ resource "null_resource" "icp-boot" {
   provisioner "remote-exec" {
     inline = [
       "chmod a+x /tmp/icp-bootmaster-scripts/*.sh",
-      "/tmp/icp-bootmaster-scripts/load-image.sh ${var.icp-version} /tmp/${basename(var.image_file)}",
-      "sudo mkdir -p /opt/ibm/cluster",
-      "sudo chown ${var.ssh_user} /opt/ibm/cluster",
+      "sudo /tmp/icp-bootmaster-scripts/load-image.sh ${var.icp-version} ${var.install_dir}/images/${basename(var.image_file)}",
+      "sudo mkdir -p ${var.install_dir}",
+      "sudo chown ${var.ssh_user} ${var.install_dir}",
       "/tmp/icp-bootmaster-scripts/copy_cluster_skel.sh ${var.icp-version}",
-      "sudo chown -R ${var.ssh_user} /opt/ibm/cluster/*",
-      "chmod 600 /opt/ibm/cluster/ssh_key",
+      "sudo chown -R ${var.ssh_user} ${var.install_dir}/*",
+      "chmod 600 ${var.install_dir}/ssh_key",
       "sudo pip install pyyaml",
       "python /tmp/icp-bootmaster-scripts/load-config.py ${var.config_strategy}",
     ]
@@ -312,36 +317,36 @@ resource "null_resource" "icp-boot" {
   # Copy the provided or generated private key
   provisioner "file" {
     content     = "${var.generate_key ? tls_private_key.icpkey.private_key_pem : file(var.icp_priv_keyfile)}"
-    destination = "/opt/ibm/cluster/ssh_key"
+    destination = "${var.install_dir}/ssh_key"
   }
   provisioner "file" {
     content     = "${join(",", var.icp-worker)}"
-    destination = "/opt/ibm/cluster/workerlist.txt"
+    destination = "${var.install_dir}/workerlist.txt"
   }
   provisioner "file" {
     content     = "${join(",", var.icp-master)}"
-    destination = "/opt/ibm/cluster/masterlist.txt"
+    destination = "${var.install_dir}/masterlist.txt"
   }
   provisioner "file" {
     content     = "${join(",", var.icp-proxy)}"
-    destination = "/opt/ibm/cluster/proxylist.txt"
+    destination = "${var.install_dir}/proxylist.txt"
   }
 
   # provisioner "file" {
   #   content     = "${length(var.icp-management) == 0 ? "null" : join(",", var.icp-management)}"
-  #   destination = "${length(var.icp-management) == 0 ? "/dev/null" : "/opt/ibm/cluster/managementlist.txt"}"
+  #   destination = "${length(var.icp-management) == 0 ? "/dev/null" : "${var.install_dir}/managementlist.txt"}"
   # }
   # provisioner "file" {
   #   content     = "${length(var.icp-va) == 0 ? "null" : join(",", var.icp-va)}"
-  #   destination = "${length(var.icp-va) == 0 ? "/dev/null" : "/opt/ibm/cluster/valist.txt"}"
+  #   destination = "${length(var.icp-va) == 0 ? "/dev/null" : "${var.install_dir}/valist.txt"}"
   # }
 
   # Since the file provisioner deals badly with empty lists, we'll create the optional management nodes differently
   # Later we may refactor to use this method for all node types for consistency  
   provisioner "remote-exec" {
     inline = [
-      "echo -n ${join(",", var.icp-management)} > /opt/ibm/cluster/managementlist.txt",
-      "echo -n ${join(",", var.icp-va)} > /opt/ibm/cluster/valist.txt",
+      "echo -n ${join(",", var.icp-management)} > ${var.install_dir}/managementlist.txt",
+      "echo -n ${join(",", var.icp-va)} > ${var.install_dir}/valist.txt",
       "/tmp/icp-bootmaster-scripts/generate_hostsfiles.sh",
       "/tmp/icp-bootmaster-scripts/start_install.sh ${var.icp-version}",
     ]
@@ -617,7 +622,7 @@ resource "null_resource" "create_storage_class" {
       "which kubectl || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin ${var.icp_installer_image}:${var.icp-version} cp /usr/local/bin/kubectl /hostbin/",
       "sudo kubectl config set-cluster ${var.cluster_name} --server=https://${var.boot-node}:8001 --insecure-skip-tls-verify=true",
       "sudo kubectl config set-context ${var.cluster_name} --cluster=${var.cluster_name}",
-      "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=/opt/ibm/cluster/cfc-certs/kubecfg.crt --client-key=/opt/ibm/cluster/cfc-certs/kubecfg.key",
+      "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=${var.install_dir}/cfc-certs/kubecfg.crt --client-key=${var.install_dir}/cfc-certs/kubecfg.key",
       "sudo kubectl config set-context ${var.cluster_name} --user=${var.cluster_name}",
       "sudo kubectl config use-context ${var.cluster_name}",
       "sudo kubectl create -f /tmp/glusterfs-secret.yaml",

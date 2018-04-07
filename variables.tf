@@ -58,6 +58,10 @@ variable "image_file" {
   default     = "/dev/null"
 }
 
+variable "install_dir" {
+  default = "/opt/ibm/cluster"
+}
+
 variable "icp-version" {
   description = "Version of ICP to provision. For example 2.1.0, 2.1.0-ee"
   default     = "2.1.0"
