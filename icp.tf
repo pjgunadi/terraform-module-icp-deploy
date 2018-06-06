@@ -253,7 +253,7 @@ resource "null_resource" "icp-worker" {
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "/tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
+      "sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -301,6 +301,11 @@ resource "null_resource" "icp-boot" {
     content     = "${jsonencode(var.icp_configuration)}"
     destination = "/tmp/items-config.yaml"
   }
+  # Copy the provided or generated private key
+  provisioner "file" {
+    content     = "${var.generate_key ? tls_private_key.icpkey.private_key_pem : file(var.icp_priv_keyfile)}"
+    destination = "${var.install_dir}/ssh_key"
+  }
   provisioner "remote-exec" {
     inline = [
       "chmod a+x /tmp/icp-bootmaster-scripts/*.sh",
@@ -313,11 +318,6 @@ resource "null_resource" "icp-boot" {
       "sudo pip install pyyaml",
       "python /tmp/icp-bootmaster-scripts/load-config.py ${var.config_strategy}",
     ]
-  }
-  # Copy the provided or generated private key
-  provisioner "file" {
-    content     = "${var.generate_key ? tls_private_key.icpkey.private_key_pem : file(var.icp_priv_keyfile)}"
-    destination = "${var.install_dir}/ssh_key"
   }
   provisioner "file" {
     content     = "${join(",", var.icp-worker)}"

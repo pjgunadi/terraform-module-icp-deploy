@@ -11,7 +11,7 @@ icp_target_path=$5
 
 if [ -n "$icp_source_user" -a -n "$icp_source_password" -a -n "$icp_source_path" -a -n "$icp_target_path" ]; then
   if [[ "${icp_source_path:0:3}" == "s3:" ]]; then
-    sudo pip install awscli
+    pip install awscli
     echo -e "${icp_source_user}\n${icp_source_password}\n${icp_source_server}\n" | aws configure
     aws s3 cp ${icp_source_path} ${icp_target_path}
     rm -f ~/.aws/credentials
