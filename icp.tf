@@ -315,7 +315,6 @@ resource "null_resource" "icp-boot" {
       "/tmp/icp-bootmaster-scripts/copy_cluster_skel.sh ${var.icp-version}",
       "sudo chown -R ${var.ssh_user} ${var.install_dir}/*",
       "chmod 600 ${var.install_dir}/ssh_key",
-      "sudo pip install pyyaml",
       "python /tmp/icp-bootmaster-scripts/load-config.py ${var.config_strategy}",
     ]
   }
