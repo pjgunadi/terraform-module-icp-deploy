@@ -301,11 +301,6 @@ resource "null_resource" "icp-boot" {
     content     = "${jsonencode(var.icp_configuration)}"
     destination = "/tmp/items-config.yaml"
   }
-  # Copy the provided or generated private key
-  provisioner "file" {
-    content     = "${var.generate_key ? tls_private_key.icpkey.private_key_pem : file(var.icp_priv_keyfile)}"
-    destination = "${var.install_dir}/ssh_key"
-  }
   provisioner "remote-exec" {
     inline = [
       "chmod a+x /tmp/icp-bootmaster-scripts/*.sh",
@@ -317,6 +312,11 @@ resource "null_resource" "icp-boot" {
       "chmod 600 ${var.install_dir}/ssh_key",
       "python /tmp/icp-bootmaster-scripts/load-config.py ${var.config_strategy}",
     ]
+  }
+  # Copy the provided or generated private key - order must be after remote exec code above
+  provisioner "file" {
+    content     = "${var.generate_key ? tls_private_key.icpkey.private_key_pem : file(var.icp_priv_keyfile)}"
+    destination = "${var.install_dir}/ssh_key"
   }
   provisioner "file" {
     content     = "${join(",", var.icp-worker)}"
