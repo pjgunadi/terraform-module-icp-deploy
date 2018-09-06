@@ -10,9 +10,9 @@ with few modifications:
 
 ## Compatibility
 This module has been tested on:
-- SoftLayer: Ubuntu 16.04 and RHEL 7.4 [Download terraform tempalte here](https://github.com/pjgunadi/ibm-cloud-private-terraform-softlayer)
-- VMware vSphere: Ubuntu 16.04 and RHEL 7.4 [Download terraform template here](https://github.com/pjgunadi/ibm-cloud-private-terraform-vmware)
-- ICP Versions: 2.1.0, 2.1.0.1
+- SoftLayer: Ubuntu 18.04, 16.04 and RHEL 7.4 [Download terraform tempalte here](https://github.com/pjgunadi/ibm-cloud-private-terraform-softlayer)
+- VMware vSphere: Ubuntu 18.04, 16.04 and RHEL 7.4 [Download terraform template here](https://github.com/pjgunadi/ibm-cloud-private-terraform-vmware)
+- ICP Versions: 3.1.0, 2.1.0.3
 
 ## Pre-requisites
 - The VMs should have been provisioned before running this module
@@ -21,13 +21,12 @@ This module has been tested on:
 
 | variable  |  default  | required |  description    |
 |-----------|-----------|---------|--------|
-|  icp-version   |      |  Yes  |   Version of ICP to provision. <br>For example `2.1.0.1`, `2.1.0.1-ee` | 
+|  icp-version   |      |  Yes  |   ICP Docker repository. <br>For example `ibmcom/icp-inception-amd64:3.1.0-ee`, `ibmcom/icp-inception:2.1.0.3` | 
 |  icp-master   |      |  Yes  |   IP address of ICP Masters. First master will also be boot master. CE edition only supports single master                 | 
 |  icp-worker   |      |  Yes  |   IP addresses of ICP Worker nodes.                | 
 |  cluster_size   |      |  Yes  |   Define total clustersize. Workaround for terraform issue #10857.                | 
 |  icp-proxy   |      |  Yes  |   IP addresses of ICP Proxy nodes.                | 
 |  icp_configuration   |   {}   |  No  |   Configuration items for ICP installation.                | 
-|  ~~enterprise-edition~~   |   False   |  No  |   *Deprecated*                | 
 |  ssh_key   |   ~/.ssh/id_rsa   |  No  |   Private key corresponding to the public key that the cloud servers are provisioned with                | 
 |  icpuser   |   admin   |  No  |   Username of initial admin user. Default: Admin                | 
 |  config_strategy   |   merge   |  No  |   Strategy for original config.yaml shipped with ICP. Default is merge, everything else means override                | 
