@@ -311,6 +311,7 @@ resource "null_resource" "icp-boot" {
       "sudo chown -R ${var.ssh_user} ${var.install_dir}/*",
       "chmod 600 ${var.install_dir}/ssh_key",
       "python /tmp/icp-bootmaster-scripts/load-config.py ${var.config_strategy}",
+      "sudo sed -i s/^127.0.0.1/#127.0.0.1/ /etc/hosts"
     ]
   }
   # Copy the provided or generated private key - order must be after remote exec code above
