@@ -103,7 +103,7 @@ resource "null_resource" "icp-proxy" {
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
+      #"sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -153,7 +153,7 @@ resource "null_resource" "icp-management" {
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
+      #"sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -203,7 +203,7 @@ resource "null_resource" "icp-va" {
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
+      #"sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -253,7 +253,7 @@ resource "null_resource" "icp-worker" {
       "/tmp/icp-common-scripts/prereqs.sh",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
       "/tmp/icp-common-scripts/docker-user.sh",
-      "sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
+      #"sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
     ]
   }
 }
@@ -416,6 +416,35 @@ resource "null_resource" "icp-management-scaler" {
       "echo -n ${join(",", var.icp-management)} > /tmp/managementlist.txt",
       "chmod a+x /tmp/icp-bootmaster-scripts/scalenodes.sh",
       "/tmp/icp-bootmaster-scripts/scalenodes.sh ${var.icp-version} management",
+    ]
+  }
+}
+
+resource "null_resource" "icp-va-scaler" {
+  depends_on = ["null_resource.icp-va", "null_resource.icp-boot"]
+
+  triggers {
+    nodes = "${join(",", var.icp-va)}"
+  }
+
+  connection {
+    host                = "${var.boot-node}"
+    user                = "${var.ssh_user}"
+    private_key         = "${var.ssh_key}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/scripts/boot-master/scalenodes.sh"
+    destination = "/tmp/icp-bootmaster-scripts/scalenodes.sh"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "echo -n ${join(",", var.icp-va)} > /tmp/valist.txt",
+      "chmod a+x /tmp/icp-bootmaster-scripts/scalenodes.sh",
+      "/tmp/icp-bootmaster-scripts/scalenodes.sh ${var.icp-version} va",
     ]
   }
 }
