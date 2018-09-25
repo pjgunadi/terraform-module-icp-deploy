@@ -66,9 +66,9 @@ resource "null_resource" "icp-proxy" {
     host                = "${element(var.icp-proxy, count.index)}"
     user                = "${var.ssh_user}"
     private_key         = "${var.ssh_key}"
-    bastion_host        = "${var.boot-node}"
-    bastion_user        = "${var.ssh_user}"
-    bastion_private_key = "${var.ssh_key}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   }
 
   # Validate we can do passwordless sudo in case we are not root
@@ -116,9 +116,9 @@ resource "null_resource" "icp-management" {
     host                = "${element(var.icp-management, count.index)}"
     user                = "${var.ssh_user}"
     private_key         = "${var.ssh_key}"
-    bastion_host        = "${var.boot-node}"
-    bastion_user        = "${var.ssh_user}"
-    bastion_private_key = "${var.ssh_key}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   }
 
   # Validate we can do passwordless sudo in case we are not root
@@ -166,9 +166,9 @@ resource "null_resource" "icp-va" {
     host                = "${element(var.icp-va, count.index)}"
     user                = "${var.ssh_user}"
     private_key         = "${var.ssh_key}"
-    bastion_host        = "${var.boot-node}"
-    bastion_user        = "${var.ssh_user}"
-    bastion_private_key = "${var.ssh_key}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   }
 
   # Validate we can do passwordless sudo in case we are not root
@@ -216,9 +216,9 @@ resource "null_resource" "icp-worker" {
     host                = "${element(var.icp-worker, count.index)}"
     user                = "${var.ssh_user}"
     private_key         = "${var.ssh_key}"
-    bastion_host        = "${var.boot-node}"
-    bastion_user        = "${var.ssh_user}"
-    bastion_private_key = "${var.ssh_key}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
   }
 
   # Validate we can do passwordless sudo in case we are not root
