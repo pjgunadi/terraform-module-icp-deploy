@@ -651,9 +651,10 @@ resource "null_resource" "create_storage_class" {
       "which kubectl || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin ${var.icp_installer_image}:${var.icp-version} cp /usr/local/bin/kubectl /hostbin/",
       "sudo kubectl config set-cluster ${var.cluster_name} --server=https://${var.boot-node}:8001 --insecure-skip-tls-verify=true",
       "sudo kubectl config set-context ${var.cluster_name} --cluster=${var.cluster_name}",
-      "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=${var.install_dir}/cfc-certs/kubecfg.crt --client-key=${var.install_dir}/cfc-certs/kubecfg.key",
+      "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=${var.install_dir}/cfc-certs/kubernetes/kubecfg.crt --client-key=${var.install_dir}/cfc-certs/kubernetes/kubecfg.key",
       "sudo kubectl config set-context ${var.cluster_name} --user=${var.cluster_name}",
       "sudo kubectl config use-context ${var.cluster_name}",
+      #"sudo cloudctl login -a https://localhost:8443 -u ${var.icpuser} -p ${var.icppasword} -c id-${var.cluster_name}-account -n default --skip-ssl-validation"
       "sudo kubectl create -f /tmp/glusterfs-secret.yaml",
       "sudo kubectl create -f /tmp/storageclass.yaml",
       "echo completed",
