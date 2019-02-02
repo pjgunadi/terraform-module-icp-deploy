@@ -95,7 +95,7 @@ variable "icp_priv_keyfile" {
 variable "cluster_size" {
   description = "Define total clustersize. Workaround for terraform issue #10857."
 }
-
+variable "master_size" {}
 variable "proxy_size" {}
 variable "management_size" {}
 variable "va_size" {}
