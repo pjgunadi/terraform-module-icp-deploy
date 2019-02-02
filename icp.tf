@@ -58,6 +58,56 @@ resource "null_resource" "icp-cluster" {
   }
 }
 
+# Master Nodes
+resource "null_resource" "icp-master" {
+  count = "${var.master_size}"
+
+  connection {
+    host                = "${element(var.icp-master, count.index)}"
+    user                = "${var.ssh_user}"
+    private_key         = "${var.ssh_key}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${var.bastion_private_key}"
+  }
+
+  # Validate we can do passwordless sudo in case we are not root
+  provisioner "remote-exec" {
+    inline = [
+      "sudo -n echo Test connection. It works.",
+    ]
+  }
+
+  provisioner "file" {
+    content     = "${var.generate_key ? tls_private_key.icpkey.public_key_openssh : file(var.icp_pub_keyfile)}"
+    destination = "/tmp/icpkey"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /tmp/icp-common-scripts",
+    ]
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/scripts/common/"
+    destination = "/tmp/icp-common-scripts"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo mkdir -p ${var.install_dir}/images; sudo chown -R ${var.ssh_user} ${var.install_dir}",
+      "mkdir -p ~/.ssh",
+      "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
+      "chmod a+x /tmp/icp-common-scripts/*",
+      "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
+      "/tmp/icp-common-scripts/docker-user.sh",
+      #"sudo /tmp/icp-common-scripts/download_installer.sh ${var.icp_source_server} ${var.icp_source_user} ${var.icp_source_password} ${var.image_file} ${var.install_dir}/images/${basename(var.image_file)}",
+    ]
+  }
+}
+
 # Proxy Nodes
 resource "null_resource" "icp-proxy" {
   count = "${var.proxy_size}"
@@ -651,9 +701,10 @@ resource "null_resource" "create_storage_class" {
       "which kubectl || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin ${var.icp_installer_image}:${var.icp-version} cp /usr/local/bin/kubectl /hostbin/",
       "sudo kubectl config set-cluster ${var.cluster_name} --server=https://${var.boot-node}:8001 --insecure-skip-tls-verify=true",
       "sudo kubectl config set-context ${var.cluster_name} --cluster=${var.cluster_name}",
-      "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=${var.install_dir}/cfc-certs/kubecfg.crt --client-key=${var.install_dir}/cfc-certs/kubecfg.key",
+      "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=${var.install_dir}/cfc-certs/kubernetes/kubecfg.crt --client-key=${var.install_dir}/cfc-certs/kubernetes/kubecfg.key",
       "sudo kubectl config set-context ${var.cluster_name} --user=${var.cluster_name}",
       "sudo kubectl config use-context ${var.cluster_name}",
+       #"sudo cloudctl login -a https://localhost:8443 -u ${var.icpuser} -p ${var.icppasword} -c id-${var.cluster_name}-account -n default --skip-ssl-validation",
       "sudo kubectl create -f /tmp/glusterfs-secret.yaml",
       "sudo kubectl create -f /tmp/storageclass.yaml",
       "echo completed",
