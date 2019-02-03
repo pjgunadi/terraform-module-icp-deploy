@@ -381,6 +381,10 @@ resource "null_resource" "icp-boot" {
     content     = "${join(",", var.icp-proxy)}"
     destination = "${var.install_dir}/proxylist.txt"
   }
+  provisioner "file" {
+    content     = "${join(",", var.boot-node)}"
+    destination = "${var.install_dir}/bootlist.txt"
+  }
 
   # provisioner "file" {
   #   content     = "${length(var.icp-management) == 0 ? "null" : join(",", var.icp-management)}"
