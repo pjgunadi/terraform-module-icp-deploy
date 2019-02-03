@@ -382,7 +382,7 @@ resource "null_resource" "icp-boot" {
     destination = "${var.install_dir}/proxylist.txt"
   }
   provisioner "file" {
-    content     = "${join(",", var.boot-node)}"
+    content     = "${var.boot-node}"
     destination = "${var.install_dir}/bootlist.txt"
   }
 
