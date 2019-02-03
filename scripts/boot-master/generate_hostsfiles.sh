@@ -68,11 +68,7 @@ fi
 
 ## Update all hostfiles in all nodes in the cluster
 for node in "${!cluster[@]}"; do
-  #Skip local ip
-  TESTIP=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | cut -d: -f2 | awk '{print $1}' | grep ${node})
-  if [ -z "$TESTIP" ]; then
-    cat /tmp/hosts | ssh -i ${WORKDIR}/ssh_key ${node} 'cat - /etc/hosts | sudo sponge /etc/hosts'
-  fi
+  cat /tmp/hosts | ssh -i ${WORKDIR}/ssh_key ${node} 'cat - /etc/hosts | sudo sponge /etc/hosts'
 done
 
 ## Generate the hosts file for the ICP installation
