@@ -34,13 +34,7 @@ done
 
 declare -A masters
 for m in "${master_ips[@]}"; do
-  # No need to ssh to self
-  if [[ "$m" == "${master_ips[0]}" ]]
-  then
-    masters[$m]=$(hostname)
-  else
-    masters[$m]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${m} hostname)
-  fi
+  masters[$m]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${m} hostname)
   cluster[$m]=${masters[$m]}
   printf "%s     %s\n" "$m" "${cluster[$m]}" >> /tmp/hosts
 done
@@ -74,13 +68,7 @@ fi
 
 ## Update all hostfiles in all nodes in the cluster
 for node in "${!cluster[@]}"; do
-  # No need to ssh to self
-  if [[ "$node" == "${master_ips[0]}" ]]
-  then
-    cat /tmp/hosts | cat - /etc/hosts | sudo sponge /etc/hosts
-  else
-    cat /tmp/hosts | ssh -i ${WORKDIR}/ssh_key ${node} 'cat - /etc/hosts | sudo sponge /etc/hosts'
-  fi
+  cat /tmp/hosts | ssh -i ${WORKDIR}/ssh_key ${node} 'cat - /etc/hosts | sudo sponge /etc/hosts'
 done
 
 ## Generate the hosts file for the ICP installation
