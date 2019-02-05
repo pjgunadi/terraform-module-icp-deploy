@@ -15,6 +15,8 @@ NEWLIST=/tmp/${NODETYPE}list.txt
 OLDLIST=${ICPDIR}/${NODETYPE}list.txt
 MASTERLIST=${ICPDIR}/masterlist.txt
 
+MASTERNODES=($(cat ${ICPDIR}/masterlist.txt | tr "," " "))
+
 #Backward Compatibility
 COMPVER=$(echo ${tag} | awk -F- '{print $1}')
 
@@ -81,20 +83,21 @@ then
   ### Setup kubectl
   
   # use kubectl from container
-  kubectl="sudo docker run -e LICENSE=accept --net=host -v /opt/ibm/cluster:/installer/cluster -v /root:/root ${org}/${repo}:${tag} kubectl"
-  
-  $kubectl config set-cluster cfc-cluster --server=https://localhost:8001 --insecure-skip-tls-verify=true 
-  $kubectl config set-context kubectl --cluster=cfc-cluster 
-  $kubectl config set-credentials user --client-certificate=/installer/cluster/cfc-certs/kubernetes/kubecfg.crt --client-key=/installer/cluster/cfc-certs/kubernetes/kubecfg.key 
-  $kubectl config set-context kubectl --user=user 
-  $kubectl config use-context kubectl
-  
+  #kubectl="sudo docker run -e LICENSE=accept --net=host -v /opt/ibm/cluster:/installer/cluster -v /root:/root ${org}/${repo}:${tag} kubectl"
+  which kubectl || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin $org/$repo:$tag cp /usr/local/bin/kubectl /hostbin/
+
+  sudo kubectl config set-cluster cfc-cluster --server=https://${MASTERNODES[0]}:8001 --insecure-skip-tls-verify=true 
+  sudo kubectl config set-context kubectl --cluster=cfc-cluster 
+  sudo kubectl config set-credentials user --client-certificate=/installer/cluster/cfc-certs/kubernetes/kubecfg.crt --client-key=/installer/cluster/cfc-certs/kubernetes/kubecfg.key 
+  sudo kubectl config set-context kubectl --user=user 
+  sudo kubectl config use-context kubectl
+
   list=$(IFS=, ; echo "${removed[*]}")
  
   for ip in "${removed[@]}"; do
-    $kubectl drain $ip --force
+    sudo kubectl drain $ip --force
     docker run -e LICENSE=accept --net=host -v "$ICPDIR":/installer/cluster ${org}/${repo}:${tag} uninstall -l $ip
-    $kubectl delete node $ip
+    sudo kubectl delete node $ip
     sudo sed -i "/^${ip}.*$/d" /etc/hosts
     sudo sed -i "/^${ip}.*$/d" /opt/ibm/cluster/hosts
   done
