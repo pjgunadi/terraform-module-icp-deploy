@@ -88,7 +88,7 @@ then
 
   sudo kubectl config set-cluster cfc-cluster --server=https://${MASTERNODES[0]}:8001 --insecure-skip-tls-verify=true 
   sudo kubectl config set-context kubectl --cluster=cfc-cluster 
-  sudo kubectl config set-credentials user --client-certificate=/installer/cluster/cfc-certs/kubernetes/kubecfg.crt --client-key=/installer/cluster/cfc-certs/kubernetes/kubecfg.key 
+  sudo kubectl config set-credentials user --client-certificate=$ICPDIR/cfc-certs/kubernetes/kubecfg.crt --client-key=$ICPDIR/cfc-certs/kubernetes/kubecfg.key 
   sudo kubectl config set-context kubectl --user=user 
   sudo kubectl config use-context kubectl
 
