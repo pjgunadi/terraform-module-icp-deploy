@@ -8,7 +8,8 @@
 #HOSTNAME=$1
 
 LOGFILE=/tmp/prereqs.log
-exec > $LOGFILE 2>&1
+exec 3>&1
+exec > >(tee -a ${LOGFILE} >/dev/null) 2> >(tee -a ${LOGFILE} >&3)
 
 #Find Linux Distro
 if grep -q -i ubuntu /etc/*release
@@ -23,66 +24,120 @@ ubuntu_install(){
   echo "vm.max_map_count=262144" | sudo tee /etc/sysctl.d/90-icp.conf
   echo "net.ipv4.ip_local_port_range=10240 60999" | sudo tee -a /etc/sysctl.d/90-icp.conf
   sudo sysctl -p /etc/sysctl.d/90-icp.conf
-  sudo apt-get -y update
-  sudo apt-get install -y apt-transport-https nfs-common ca-certificates curl software-properties-common
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  ## Attempt to avoid probelems when dpkg requires configuration
-  export DEBIAN_FRONTEND=noninteractive
-  export DEBIAN_PRIORITY=critical
-  sudo -E apt-get -y update
-  sudo -E apt-get -yq -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
-  #sudo apt-get -y upgrade
-  sudo apt-get install -y python python-pip socat unzip moreutils glusterfs-client
+
+  packages_to_check="\
+python-yaml thin-provisioning-tools lvm2 \
+apt-transport-https nfs-common ca-certificates curl software-properties-common \
+python python-pip socat unzip moreutils"
+  packages_to_install=""
+
+  for package in ${packages_to_check}; do
+    if ! dpkg -l ${package} &> /dev/null; then
+      packages_to_install="${packages_to_install} ${package}"
+    fi
+  done
+
+  if [ ! -z "${packages_to_install}" ]; then
+    # attempt to install, probably won't work airgapped but we'll get an error immediately
+    echo "Attempting to install: ${packages_to_install} ..."
+    retries=20
+    sudo apt-get update
+    while [ $? -ne 0 -a "$retries" -gt 0 ]; do
+      retries=$((retries-1))
+      echo "Another process has acquired the apt-get update lock; waiting 10s" >&2
+      sleep 10;
+      sudo apt-get update
+    done
+    if [ $? -ne 0 -a "$retries" -eq 0 ] ; then
+      echo "Maximum number of retries (${retries}) for apt-get update attempted; quitting" >&2
+      exit 1
+    fi
+
+    retries=20
+    export DEBIAN_FRONTEND=noninteractive
+    export DEBIAN_PRIORITY=critical
+    sudo -E apt-get -yq -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
+    while [ $? -ne 0 -a "$retries" -gt 0 ]; do
+      retries=$((retries-1))
+      echo "Another process has acquired the apt-get install/upgrade lock; waiting 10s" >&2
+      sleep 10;
+      sudo -E apt-get -yq -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
+    done
+    
+    retries=20
+    sudo apt-get install -y ${packages_to_install}
+    while [ $? -ne 0 -a "$retries" -gt 0 ]; do
+      retries=$((retries-1))
+      echo "Another process has acquired the apt-get install/upgrade lock; waiting 10s" >&2
+      sleep 10;
+      sudo apt-get install -y ${packages_to_install}
+    done
+    if [ $? -ne 0 -a "$retries" -eq 0 ] ; then
+      echo "Maximum number of retries (20) for apt-get install attempted; quitting" >&2
+      exit 1
+    fi
+  fi
+
+  if ! docker --version ; then
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    retries=20
+    sudo apt-get install -y docker-ce
+    while [ $? -ne 0 -a "$retries" -gt 0 ]; do
+      retries=$((retries-1))
+      echo "Another process has acquired the apt-get install/upgrade lock; waiting 10s" >&2
+      sleep 10;
+      sudo apt-get install -y docker-ce
+    done
+    if [ $? -ne 0 -a "$retries" -eq 0 ] ; then
+      echo "Maximum number of retries (20) for apt-get install attempted; quitting" >&2
+      exit 1
+    fi
+  fi
   sudo service iptables stop
   sudo ufw disable
-  if ! docker --version ; then
-    sudo apt-get install -y docker-ce
-    # DOCKER_VERSION=$(sudo apt-cache madison docker-ce | grep 17.09 | awk -F\| 'NR==1 {print $2}' | tr -d ' ')
-    # if [ "$DOCKER_VERSION" != "" ]; then
-    #   sudo apt-get install -y docker-ce=$DOCKER_VERSION
-    # else
-    #   sudo apt-get install -y docker-ce
-    # fi
-  fi
- 
-  sudo service docker start
   sudo pip install --upgrade pip
   sudo pip install pyyaml paramiko
-  sudo modprobe dm_thin_pool
-  [ -f /etc/modules ] && grep dm_thin_pool /etc/modules || echo dm_thin_pool | sudo tee -a /etc/modules
-  #echo y | pip uninstall docker-py
+  sudo service docker start
 }
+
 crlinux_install(){
-  #Disable SELINUX
-  sudo sed -i s/^SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config && sudo setenforce 0
-  sudo systemctl disable firewalld
-  sudo systemctl stop firewalld
   echo "vm.max_map_count=262144" | sudo tee /etc/sysctl.d/90-icp.conf
   echo "net.ipv4.ip_local_port_range=10240 60999" | sudo tee -a /etc/sysctl.d/90-icp.conf
   sudo sysctl -p /etc/sysctl.d/90-icp.conf
-  #install epel
-  sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-  sudo yum -y install python-setuptools policycoreutils-python socat unzip glusterfs-client
-  sudo easy_install pip
-  sudo pip install pyyaml paramiko
-  sudo yum install -y yum-utils device-mapper-persistent-data lvm2
-  #add docker repo and install
+
+  packages_to_check="\
+PyYAML device-mapper libseccomp libtool-ltdl libcgroup iptables device-mapper-persistent-data lvm2 \
+python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils"
+
+  for package in ${packages_to_check}; do
+    if ! rpm -q ${package} &> /dev/null; then
+      packages_to_install="${packages_to_install} ${package}"
+    fi
+  done
+
+  if [ ! -z "${packages_to_install}" ]; then
+    # attempt to install, probably won't work airgapped but we'll get an error immediately
+    echo "Attempting to install: ${packages_to_install} ..."
+    #sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    sudo yum install -y ${packages_to_install}
+  fi
+
   if ! docker --version ; then
     sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     sudo yum -y install docker-ce
-    # DOCKER_VERSION=$(sudo yum list docker-ce --showduplicates | sort -r | grep 17.09 | awk -F" " 'NR==1 {print $2}' | tr -d ' ')
-    # if [ "$DOCKER_VERSION" != "" ]; then
-    #   sudo yum -y install docker-ce-$DOCKER_VERSION
-    # else
-    #   sudo yum -y install docker-ce
-    # fi
   fi
+
+  #Disable SELINUX
+  sudo sed -i s/^SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config && sudo setenforce 0
+  sudo systemctl disable firewalld
+  sudo systemctl stop firewalld
+
+  sudo easy_install pip
+  sudo pip install pyyaml paramiko
   sudo systemctl enable docker
   sudo systemctl start docker
-  sudo modprobe dm_thin_pool
-  [ -f /etc/modules-load.d/dm_thin_pool.conf ] && grep dm_thin_pool /etc/modules-load.d/dm_thin_pool.conf || echo dm_thin_pool | sudo tee -a /etc/modules-load.d/dm_thin_pool.conf
 }
 
 if [ "$OSLEVEL" == "ubuntu" ]; then
