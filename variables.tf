@@ -179,7 +179,7 @@ variable heketi_svc_ip {
 variable cluster_name {}
 
 variable icp_installer_image {
-  default = "ibmcom/icp-inception"
+  default = "ibmcom/icp-inception-amd64"
 }
 
 variable gluster_volume_type {

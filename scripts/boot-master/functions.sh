@@ -1,6 +1,6 @@
 #!/bin/bash
 DefaultOrg="ibmcom"
-DefaultRepo="icp-inception"
+DefaultRepo="icp-inception-amd64"
 
 # Populates globals $org $repo $tag
 function parse_icpversion() {
