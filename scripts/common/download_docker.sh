@@ -9,7 +9,7 @@ docker_src_password=$3
 docker_src_path=$4
 docker_tgt_path=$5
 
-if [ -n "$docker_src_user" -a -n "$docker_src_password" -a -n "$docker_src_path" -a -n "$docker_tgt_path" ]; then
+if [ -n "$docker_src_user" -a -n "$docker_src_password" -a -n "$docker_src_path" -a -n "$docker_tgt_path" -a ! -s "$docker_tgt_path" ]; then
   if [[ "${docker_src_path:0:3}" == "s3:" ]]; then
     pip install awscli
     echo -e "${docker_src_user}\n${docker_src_password}\n${docker_src_server}\n" | aws configure
@@ -23,8 +23,10 @@ if [ -n "$docker_src_user" -a -n "$docker_src_password" -a -n "$docker_src_path"
       echo "Completed download installation file"
     fi
   fi
-elif [ -z "$docker_src_user" -a -z "$docker_src_password" -a -n "$docker_src_path" -a -n "$docker_tgt_path" ]; then
+elif [ -z "$docker_src_user" -a -z "$docker_src_password" -a -n "$docker_src_path" -a -n "$docker_tgt_path" -a ! -s "$docker_tgt_path" ]; then
   mv $docker_src_path $docker_tgt_path
+elif [ -a ! -s "$docker_tgt_path" ]; then
+  echo "Target file exist"
 else
   echo "No input for download."
 fi

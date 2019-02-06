@@ -9,7 +9,7 @@ icp_source_password=$3
 icp_source_path=$4
 icp_target_path=$5
 
-if [ -n "$icp_source_user" -a -n "$icp_source_password" -a -n "$icp_source_path" -a -n "$icp_target_path" ]; then
+if [ -n "$icp_source_user" -a -n "$icp_source_password" -a -n "$icp_source_path" -a -n "$icp_target_path" -a ! -s "$icp_target_path" ]; then
   if [[ "${icp_source_path:0:3}" == "s3:" ]]; then
     pip install awscli
     echo -e "${icp_source_user}\n${icp_source_password}\n${icp_source_server}\n" | aws configure
@@ -26,8 +26,10 @@ if [ -n "$icp_source_user" -a -n "$icp_source_password" -a -n "$icp_source_path"
   # echo "Start loading image to docker"
   # tar xf $icp_target_path -O | sudo docker load #Commented: && rm $icp_target_path
   # echo "Finished loading image to docker"
-elif [ -z "$icp_source_user" -a -z "$icp_source_password" -a -n "$icp_source_path" -a -n "$icp_target_path" ]; then
+elif [ -z "$icp_source_user" -a -z "$icp_source_password" -a -n "$icp_source_path" -a -n "$icp_target_path" -a ! -s "$icp_target_path" ]; then
   mv $icp_source_path $icp_target_path
+elif [ ! -s "$icp_target_path" ]; then
+  echo "Target file exist"
 else
   echo "No input for download."
 fi
