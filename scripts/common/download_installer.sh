@@ -23,6 +23,8 @@ if [ -n "$icp_source_user" -a -n "$icp_source_password" -a -n "$icp_source_path"
   # echo "Start loading image to docker"
   # tar xf $icp_target_path -O | sudo docker load #Commented: && rm $icp_target_path
   # echo "Finished loading image to docker"
+elif [ -z "$icp_source_user" -a -z "$icp_source_password" -a -n "$icp_source_path" -a -n "$icp_target_path" ]; then
+  mv $icp_source_path $icp_target_path
 else
   echo "No input for download."
 fi

@@ -20,6 +20,8 @@ if [ -n "$docker_src_user" -a -n "$docker_src_password" -a -n "$docker_src_path"
     python $BASEDIR/remote_copy.py $docker_src_server $docker_src_user $docker_src_password $docker_src_path $docker_tgt_path
     echo "Completed download installation file"
   fi
+elif [ -z "$docker_src_user" -a -z "$docker_src_password" -a -n "$docker_src_path" -a -n "$docker_tgt_path" ]; then
+  mv $docker_src_path $docker_tgt_path
 else
   echo "No input for download."
 fi
