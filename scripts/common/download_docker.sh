@@ -17,8 +17,11 @@ if [ -n "$docker_src_user" -a -n "$docker_src_password" -a -n "$docker_src_path"
     rm -f ~/.aws/credentials
   else
     echo "Start downloading installation file"
-    python $BASEDIR/remote_copy.py $docker_src_server $docker_src_user $docker_src_password $docker_src_path $docker_tgt_path
-    echo "Completed download installation file"
+    sshpass -p "$docker_src_password" scp $docker_src_user@$docker_src_server:$docker_src_path $docker_tgt_path
+    if [ "$?" != "0" ]; then
+      python $BASEDIR/remote_copy.py $docker_src_server $docker_src_user $docker_src_password $docker_src_path $docker_tgt_path
+      echo "Completed download installation file"
+    fi
   fi
 elif [ -z "$docker_src_user" -a -z "$docker_src_password" -a -n "$docker_src_path" -a -n "$docker_tgt_path" ]; then
   mv $docker_src_path $docker_tgt_path

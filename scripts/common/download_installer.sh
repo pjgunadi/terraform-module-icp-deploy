@@ -17,8 +17,11 @@ if [ -n "$icp_source_user" -a -n "$icp_source_password" -a -n "$icp_source_path"
     rm -f ~/.aws/credentials
   else
     echo "Start downloading installation file"
-    python $BASEDIR/remote_copy.py $icp_source_server $icp_source_user $icp_source_password $icp_source_path $icp_target_path
-    echo "Completed download installation file"
+    sshpass -p "$icp_source_password" scp $icp_source_user@$icp_source_server:$icp_source_path $icp_target_path
+    if [ "$?" != "0" ]; then  
+      python $BASEDIR/remote_copy.py $icp_source_server $icp_source_user $icp_source_password $icp_source_path $icp_target_path
+      echo "Completed download installation file"
+    fi
   fi
   # echo "Start loading image to docker"
   # tar xf $icp_target_path -O | sudo docker load #Commented: && rm $icp_target_path
