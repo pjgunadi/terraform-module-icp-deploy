@@ -42,7 +42,7 @@ if grep -q -i ubuntu /etc/*release
     OSLEVEL=other
 fi
 if [ "$OSLEVEL" == "ubuntu" ]; then
-  if ! docker --version ; then
+  if [ -z "$(which docker)" ]; then
     retries=20
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
@@ -61,7 +61,7 @@ if [ "$OSLEVEL" == "ubuntu" ]; then
     fi
   fi
 else
-  if ! docker --version ; then
+  if [ -z "$(which docker)" ]; then
     sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     sudo yum -y install docker-ce
