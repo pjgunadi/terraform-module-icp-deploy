@@ -58,6 +58,11 @@ variable "image_file" {
   default     = "/dev/null"
 }
 
+variable "docker_installer" {
+  description = "ICP Bundled Docker installer"
+  default     = "/dev/null"
+}
+
 variable "install_dir" {
   default = "/opt/ibm/cluster"
 }
