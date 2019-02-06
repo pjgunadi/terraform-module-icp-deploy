@@ -84,29 +84,29 @@ python python-pip socat unzip moreutils sshpass"
     fi
   fi
 
-  if ! docker --version ; then
-    retries=20
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    sudo apt-get install -y docker-ce
-    while [ $? -ne 0 -a "$retries" -gt 0 ]; do
-      retries=$((retries-1))
-      echo "Another process has acquired the apt-get install/upgrade lock; waiting 10s" >&2
-      sleep 10;
-      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-      sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-      sudo apt-get install -y docker-ce
-    done
-    if [ $? -ne 0 -a "$retries" -eq 0 ] ; then
-      echo "Maximum number of retries (20) for apt-get install attempted; quitting" >&2
-      exit 1
-    fi
-  fi
+  # if ! docker --version ; then
+  #   retries=20
+  #   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  #   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  #   sudo apt-get install -y docker-ce
+  #   while [ $? -ne 0 -a "$retries" -gt 0 ]; do
+  #     retries=$((retries-1))
+  #     echo "Another process has acquired the apt-get install/upgrade lock; waiting 10s" >&2
+  #     sleep 10;
+  #     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  #     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  #     sudo apt-get install -y docker-ce
+  #   done
+  #   if [ $? -ne 0 -a "$retries" -eq 0 ] ; then
+  #     echo "Maximum number of retries (20) for apt-get install attempted; quitting" >&2
+  #     exit 1
+  #   fi
+  # fi
   sudo service iptables stop
   sudo ufw disable
   sudo pip install --upgrade pip
   sudo pip install pyyaml paramiko
-  sudo service docker start
+  # sudo service docker start
 }
 
 crlinux_install(){
@@ -131,11 +131,11 @@ python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils sshpass
     sudo yum install -y ${packages_to_install}
   fi
 
-  if ! docker --version ; then
-    sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
-    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum -y install docker-ce
-  fi
+  # if ! docker --version ; then
+  #   sudo rpm -ivh http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.21-1.el7.noarch.rpm
+  #   sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  #   sudo yum -y install docker-ce
+  # fi
 
   #Disable SELINUX
   sudo sed -i s/^SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config && sudo setenforce 0
@@ -144,8 +144,8 @@ python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils sshpass
 
   sudo easy_install pip
   sudo pip install pyyaml paramiko
-  sudo systemctl enable docker
-  sudo systemctl start docker
+  # sudo systemctl enable docker
+  # sudo systemctl start docker
 }
 
 if [ "$OSLEVEL" == "ubuntu" ]; then
