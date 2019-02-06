@@ -86,14 +86,16 @@ python python-pip socat unzip moreutils"
   fi
 
   if ! docker --version ; then
+    retries=20
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    retries=20
     sudo apt-get install -y docker-ce
     while [ $? -ne 0 -a "$retries" -gt 0 ]; do
       retries=$((retries-1))
       echo "Another process has acquired the apt-get install/upgrade lock; waiting 10s" >&2
       sleep 10;
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
       sudo apt-get install -y docker-ce
     done
     if [ $? -ne 0 -a "$retries" -eq 0 ] ; then
