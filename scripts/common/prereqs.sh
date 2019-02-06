@@ -25,12 +25,11 @@ ubuntu_install(){
   echo "net.ipv4.ip_local_port_range=10240 60999" | sudo tee -a /etc/sysctl.d/90-icp.conf
   sudo sysctl -p /etc/sysctl.d/90-icp.conf
 
-  sudo rm /var/cache/apt/archives/lock
-  sudo rm  /var/lib/apt/lists/lock
-  sudo dpkg --configure -a
-  sudo apt-get clean
-  sudo apt-get install -f
-  sudo apt-get update
+  # sudo rm /var/cache/apt/archives/lock
+  # sudo rm  /var/lib/apt/lists/lock
+  # sudo dpkg --configure -a
+  # sudo apt-get clean
+  # sudo apt-get install -f
 
   packages_to_check="\
 python-yaml thin-provisioning-tools lvm2 \
