@@ -28,7 +28,7 @@ if [ -n "$icp_source_user" -a -n "$icp_source_password" -a -n "$icp_source_path"
   # echo "Finished loading image to docker"
 elif [ -z "$icp_source_user" -a -z "$icp_source_password" -a -n "$icp_source_path" -a -n "$icp_target_path" -a ! -s "$icp_target_path" ]; then
   mv $icp_source_path $icp_target_path
-elif [ ! -s "$icp_target_path" ]; then
+elif [ -s "$icp_target_path" ]; then
   echo "Target file exist"
 else
   echo "No input for download."

@@ -25,7 +25,7 @@ if [ -n "$docker_src_user" -a -n "$docker_src_password" -a -n "$docker_src_path"
   fi
 elif [ -z "$docker_src_user" -a -z "$docker_src_password" -a -n "$docker_src_path" -a -n "$docker_tgt_path" -a ! -s "$docker_tgt_path" ]; then
   mv $docker_src_path $docker_tgt_path
-elif [ -a ! -s "$docker_tgt_path" ]; then
+elif [ -s "$docker_tgt_path" ]; then
   echo "Target file exist"
 else
   echo "No input for download."
