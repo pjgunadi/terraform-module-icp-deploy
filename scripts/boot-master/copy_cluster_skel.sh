@@ -13,4 +13,4 @@ parse_icpversion ${1}
 echo "org=$org repo=$repo tag=$tag"
 
 
-docker run -e LICENSE=accept -v /opt/ibm:/data ${org}/${repo}:${tag} cp -r cluster /data
+docker run --rm -e LICENSE=accept -v /opt/ibm:/data ${org}/${repo}:${tag} cp -r cluster /data

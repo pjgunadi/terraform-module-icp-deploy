@@ -96,7 +96,7 @@ then
  
   for ip in "${removed[@]}"; do
     sudo kubectl drain $ip --force
-    docker run -e LICENSE=accept --net=host -v "$ICPDIR":/installer/cluster ${org}/${repo}:${tag} uninstall -l $ip
+    docker run --rm -e LICENSE=accept --net=host -v "$ICPDIR":/installer/cluster ${org}/${repo}:${tag} uninstall -l $ip
     sudo kubectl delete node $ip
     sudo sed -i "/^${ip}.*$/d" /etc/hosts
     sudo sed -i "/^${ip}.*$/d" /opt/ibm/cluster/hosts
@@ -119,10 +119,10 @@ then
   list=$(IFS=, ; echo "${added[*]}")
   
   if [ "$COMPVER" == "2.1.0.1" ]; then
-    docker run -e LICENSE=accept --net=host -v "/opt/ibm/cluster":/installer/cluster \
+    docker run --rm -e LICENSE=accept --net=host -v "/opt/ibm/cluster":/installer/cluster \
     ${org}/${repo}:${tag} install -l ${list}
   else
-    docker run -e LICENSE=accept --net=host -v "/opt/ibm/cluster":/installer/cluster \
+    docker run --rm -e LICENSE=accept --net=host -v "/opt/ibm/cluster":/installer/cluster \
     ${org}/${repo}:${tag} ${NODETYPE} -l ${list}
   fi
 fi
