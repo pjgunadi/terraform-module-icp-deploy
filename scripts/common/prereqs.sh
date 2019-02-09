@@ -34,7 +34,7 @@ ubuntu_install(){
   packages_to_check="\
 python-yaml thin-provisioning-tools lvm2 \
 apt-transport-https nfs-common ca-certificates curl software-properties-common \
-python python-pip socat unzip moreutils sshpass"
+python python-pip socat unzip moreutils glusterfs-client sshpass"
   packages_to_install=""
 
   for package in ${packages_to_check}; do
@@ -116,7 +116,7 @@ crlinux_install(){
 
   packages_to_check="\
 PyYAML device-mapper libseccomp libtool-ltdl libcgroup iptables device-mapper-persistent-data lvm2 \
-python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils sshpass"
+python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils glusterfs-client sshpass"
 
   for package in ${packages_to_check}; do
     if ! rpm -q ${package} &> /dev/null; then
