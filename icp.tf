@@ -709,9 +709,9 @@ resource "null_resource" "create_storage_class" {
   provisioner "remote-exec" {
     inline = [
       "which kubectl || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin ${var.icp_installer_image}:${var.icp-version} cp /usr/local/bin/kubectl /hostbin/",
+      "which cloudctl || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin ${var.icp_installer_image}:${var.icp-version} cp /usr/local/platform-api/cloudctl /hostbin/",
       "which helm || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin ${var.icp_installer_image}:${var.icp-version} cp /usr/local/bin/helm /hostbin/",
       "which calicoctl || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin ${var.icp_installer_image}:${var.icp-version} cp /usr/local/bin/calicoctl /hostbin/",
-      "which cloudctl || docker run --rm -e LICENSE=accept -v /usr/local/bin:/hostbin ${var.icp_installer_image}:${var.icp-version} cp /usr/local/bin/cloudctl /hostbin/",
       "sudo kubectl config set-cluster ${var.cluster_name} --server=https://${element(var.icp-master, 0)}:8001 --insecure-skip-tls-verify=true",
       "sudo kubectl config set-context ${var.cluster_name} --cluster=${var.cluster_name}",
       "sudo kubectl config set-credentials ${var.cluster_name} --client-certificate=${var.install_dir}/cfc-certs/kubernetes/kubecfg.crt --client-key=${var.install_dir}/cfc-certs/kubernetes/kubecfg.key",
