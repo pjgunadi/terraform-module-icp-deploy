@@ -116,7 +116,7 @@ crlinux_install(){
 
   packages_to_check="\
 PyYAML device-mapper libseccomp libtool-ltdl libcgroup iptables device-mapper-persistent-data lvm2 \
-python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils glusterfs-client sshpass"
+python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils glusterfs-fuse sshpass"
 
   for package in ${packages_to_check}; do
     if ! rpm -q ${package} &> /dev/null; then
