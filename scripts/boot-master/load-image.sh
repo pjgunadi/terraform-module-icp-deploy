@@ -37,7 +37,9 @@ if [[ "${image_location}" != "" ]]; then
 fi
 
 if [[ -s "$image_file" ]]; then
-  tar xf ${image_file} -O | sudo docker load
+  if [[ -z $(docker images -q ${registry}${registry:+/}${org}/${repo}:${tag}) ]]; then
+    tar xf ${image_file} -O | sudo docker load
+  fi
 else
   # If we don't have an image locally we'll pull from docker registry
   if [[ -z $(docker images -q ${registry}${registry:+/}${org}/${repo}:${tag}) ]]; then

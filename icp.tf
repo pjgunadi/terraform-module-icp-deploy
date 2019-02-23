@@ -314,11 +314,10 @@ resource "null_resource" "icp-worker" {
   }
 }
 
-## Actions that needs to be taken on boot master only
+## Actions that needs to be taken on boot node only
 resource "null_resource" "icp-boot" {
   depends_on = ["null_resource.icp-cluster", "null_resource.icp-proxy", "null_resource.icp-management", "null_resource.icp-va", "null_resource.icp-worker"]
 
-  # The first master is always the boot master where we run provisioning jobs from
   connection {
     host                = "${var.boot-node}"
     user                = "${var.ssh_user}"
