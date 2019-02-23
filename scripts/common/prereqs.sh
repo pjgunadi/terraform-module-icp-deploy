@@ -34,7 +34,7 @@ ubuntu_install(){
   packages_to_check="\
 python-yaml thin-provisioning-tools lvm2 \
 apt-transport-https nfs-common ca-certificates curl software-properties-common \
-python python-pip socat unzip moreutils glusterfs-client sshpass"
+python python-pip socat unzip moreutils glusterfs-client sshpass strongswan"
   packages_to_install=""
 
   for package in ${packages_to_check}; do
@@ -102,8 +102,8 @@ python python-pip socat unzip moreutils glusterfs-client sshpass"
   #     exit 1
   #   fi
   # fi
-  sudo service iptables stop
-  sudo ufw disable
+  # sudo service iptables stop
+  # sudo ufw disable
   sudo -H pip install --upgrade pip
   sudo -H pip install pyyaml paramiko
   # sudo service docker start
@@ -116,7 +116,7 @@ crlinux_install(){
 
   packages_to_check="\
 PyYAML device-mapper libseccomp libtool-ltdl libcgroup iptables device-mapper-persistent-data lvm2 \
-python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils glusterfs-fuse sshpass"
+python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils glusterfs-fuse sshpass libreswan"
 
   for package in ${packages_to_check}; do
     if ! rpm -q ${package} &> /dev/null; then
@@ -139,8 +139,8 @@ python-setuptools policycoreutils-python socat unzip nfs-utils yum-utils gluster
 
   #Disable SELINUX
   sudo sed -i s/^SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config && sudo setenforce 0
-  sudo systemctl disable firewalld
-  sudo systemctl stop firewalld
+  # sudo systemctl disable firewalld
+  # sudo systemctl stop firewalld
 
   sudo easy_install pip
   sudo -H pip install pyyaml paramiko
