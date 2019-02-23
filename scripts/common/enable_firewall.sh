@@ -17,7 +17,6 @@ fi
 
 if [ "$FW_ENABLED" == "false" ]; then
   if [ "$OSLEVEL" == "ubuntu" ]; then
-    sudo service iptables stop
     sudo ufw disable
   else
     sudo systemctl disable firewalld
@@ -25,8 +24,8 @@ if [ "$FW_ENABLED" == "false" ]; then
   fi
 else
   if [ "$OSLEVEL" == "ubuntu" ]; then
-    sudo service iptables start
-    sudo ufw enable
+    sudo ufw allow ssh
+    echo y | sudo ufw enable
   else
     sudo systemctl enable firewalld
     sudo systemctl start firewalld
