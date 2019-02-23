@@ -194,3 +194,7 @@ variable gluster_volume_type {
 variable heketi_admin_pwd {
   default = "none"
 }
+
+variable firewall_enabled {
+  default = false
+}
