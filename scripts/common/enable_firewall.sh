@@ -3,9 +3,9 @@ LOGFILE=/tmp/disable_firewall.log
 exec  > $LOGFILE 2>&1
 
 if [ "$1" != "" ]; then
-  FW_ENABLED = "$1"
+  FW_ENABLED="$1"
 else
-  FW_ENABLED = "false"
+  FW_ENABLED="false"
 fi
 
 if grep -q -i ubuntu /etc/*release
