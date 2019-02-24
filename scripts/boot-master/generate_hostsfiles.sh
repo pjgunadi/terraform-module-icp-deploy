@@ -78,7 +78,7 @@ fi
 
 ## Update all hostfiles in all nodes in the cluster
 for node in "${!cluster[@]}"; do
-  cat /tmp/hosts | ssh -i ${WORKDIR}/ssh_key ${node} 'cat - /etc/hosts | sudo sponge /etc/hosts'
+  cat /tmp/hosts | ssh -i ${WORKDIR}/ssh_key ${node} 'sudo tee -a /etc/hosts'
 done
 
 ## Generate the hosts file for the ICP installation

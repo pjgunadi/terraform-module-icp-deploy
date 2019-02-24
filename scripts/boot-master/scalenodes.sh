@@ -112,8 +112,8 @@ then
   # Update /etc/hosts
   for node in "${added[@]}" ; do
     nodename=$(ssh -o StrictHostKeyChecking=no -i ${ICPDIR}/ssh_key ${node} hostname)
-    printf "%s     %s\n" "$node" "$nodename" | cat - /etc/hosts | sudo sponge /etc/hosts
-    printf "%s     %s\n" "$node" "$nodename" | ssh -o StrictHostKeyChecking=no -i ${ICPDIR}/ssh_key ${node} 'cat - /etc/hosts | sudo sponge /etc/hosts'
+    printf "%s     %s\n" "$node" "$nodename" | sudo tee -a /etc/hosts
+    printf "%s     %s\n" "$node" "$nodename" | ssh -o StrictHostKeyChecking=no -i ${ICPDIR}/ssh_key ${node} 'sudo tee -a /etc/hosts'
   done
 
   list=$(IFS=, ; echo "${added[*]}")
