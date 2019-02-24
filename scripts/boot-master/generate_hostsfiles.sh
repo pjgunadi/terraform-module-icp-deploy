@@ -24,29 +24,37 @@ declare -A cluster
 declare -A workers
 for worker in "${worker_ips[@]}"; do
   workers[$worker]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${worker} hostname)
-  cluster[$worker]=${workers[$worker]}
-  printf "%s     %s\n" "$worker" "${cluster[$worker]}" >> /tmp/hosts
+  if [ "${workers[$worker]}" != "" -a "${cluster[$worker]}" == "" ]; then
+    cluster[$worker]=${workers[$worker]}
+    printf "%s     %s     %s\n" "$worker" "${cluster[$worker]}" "$(echo ${cluster[$worker]} | cut -d '.' -f1)" >> /tmp/hosts
+  fi
 done
 
 declare -A proxies
 for proxy in "${proxy_ips[@]}"; do
   proxies[$proxy]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${proxy} hostname)
-  cluster[$proxy]=${proxies[$proxy]}
-  printf "%s     %s\n" "$proxy" "${cluster[$proxy]}" >> /tmp/hosts
+  if [ "${proxies[$proxy]}" != "" -a "${cluster[$proxy]}" == "" ]; then
+    cluster[$proxy]=${proxies[$proxy]}
+    printf "%s     %s     %s\n" "$proxy" "${cluster[$proxy]}" "$(echo ${cluster[$proxy]} | cut -d '.' -f1)" >> /tmp/hosts
+  fi
 done
 
 declare -A masters
 for m in "${master_ips[@]}"; do
   masters[$m]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${m} hostname)
-  cluster[$m]=${masters[$m]}
-  printf "%s     %s\n" "$m" "${cluster[$m]}" >> /tmp/hosts
+  if [ "${masters[$m]}" != "" -a "${cluster[$m]}" == "" ]; then
+    cluster[$m]=${masters[$m]}
+    printf "%s     %s     %s\n" "$m" "${cluster[$m]}" "$(echo ${cluster[$m]} | cut -d '.' -f1)" >> /tmp/hosts
+  fi
 done
 
 declare -A boots
-for m in "${boot_ips[@]}"; do
-  boots[$m]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${m} hostname)
-  cluster[$m]=${boots[$m]}
-  printf "%s     %s\n" "$m" "${cluster[$m]}" >> /tmp/hosts
+for b in "${boot_ips[@]}"; do
+  boots[$b]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${b} hostname)
+  if [ "${boots[$b]}" != "" -a "${cluster[$b]}" == "" ]; then
+    cluster[$b]=${boots[$b]}
+    printf "%s     %s     %s\n" "$b" "${cluster[$b]}" "$(echo ${cluster[$b]} | cut -d '.' -f1)" >> /tmp/hosts
+  fi
 done
 
 # Add management nodes if separate from master nodes
@@ -56,10 +64,12 @@ then
   IFS=', ' read -r -a management_ips <<< $(cat ${WORKDIR}/managementlist.txt)
   
   declare -A mngrs
-  for m in "${management_ips[@]}"; do
-    mngrs[$m]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${m} hostname)
-    cluster[$m]=${mngrs[$m]}
-    printf "%s     %s\n" "$m" "${cluster[$m]}" >> /tmp/hosts
+  for mg in "${management_ips[@]}"; do
+    mngrs[$mg]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${mg} hostname)
+    if [ "${mngrs[$mg]}" != "" -a "${cluster[$mg]}" == "" ]; then
+      cluster[$mg]=${mngrs[$mg]}
+      printf "%s     %s     %s\n" "$mg" "${cluster[$mg]}" "$(echo ${cluster[$mg]} | cut -d '.' -f1)" >> /tmp/hosts
+    fi
   done
 fi
 
@@ -71,14 +81,19 @@ if [[ -s ${WORKDIR}/valist.txt ]]; then
   declare -A vas
   for v in "${va_ips[@]}"; do
     vas[$v]=$(ssh -o StrictHostKeyChecking=no -i ${WORKDIR}/ssh_key ${v} hostname)
-    cluster[$v]=${vas[$v]}
-    printf "%s     %s\n" "$v" "${cluster[$v]}" >> /tmp/hosts
+    if [ "${vas[$v]}" != "" -a "${cluster[$v]}" == "" ]; then
+      cluster[$v]=${vas[$v]}
+      printf "%s     %s     %s\n" "$v" "${cluster[$v]}" "$(echo ${cluster[$v]} | cut -d '.' -f1)" >> /tmp/hosts
+    fi
   done
 fi
 
 ## Update all hostfiles in all nodes in the cluster
+cat /tmp/hosts | sudo tee -a /etc/hosts
 for node in "${!cluster[@]}"; do
-  cat /tmp/hosts | ssh -i ${WORKDIR}/ssh_key ${node} 'sudo tee -a /etc/hosts'
+  if [ "$node" != "$(hostname)" ]; then
+    cat /tmp/hosts | ssh -i ${WORKDIR}/ssh_key ${node} 'sudo tee -a /etc/hosts'
+  fi
 done
 
 ## Generate the hosts file for the ICP installation
