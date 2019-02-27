@@ -51,6 +51,7 @@ resource "null_resource" "icp-cluster" {
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/comment_localhost.sh",
       "/tmp/icp-common-scripts/enable_firewall.sh ${var.firewall_enabled}",
       "sudo /tmp/icp-common-scripts/download_docker.sh \"${var.icp_source_server}\" \"${var.icp_source_user}\" \"${var.icp_source_password}\" \"${var.docker_installer}\" \"${var.install_dir}/images/${basename(var.docker_installer)}\"",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
@@ -103,6 +104,7 @@ resource "null_resource" "icp-master" {
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/comment_localhost.sh",
       "/tmp/icp-common-scripts/enable_firewall.sh ${var.firewall_enabled}",
       "sudo /tmp/icp-common-scripts/download_docker.sh \"${var.icp_source_server}\" \"${var.icp_source_user}\" \"${var.icp_source_password}\" \"${var.docker_installer}\" \"${var.install_dir}/images/${basename(var.docker_installer)}\"",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
@@ -155,6 +157,7 @@ resource "null_resource" "icp-proxy" {
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/comment_localhost.sh",
       "/tmp/icp-common-scripts/enable_firewall.sh ${var.firewall_enabled}",
       "sudo /tmp/icp-common-scripts/download_docker.sh \"${var.icp_source_server}\" \"${var.icp_source_user}\" \"${var.icp_source_password}\" \"${var.docker_installer}\" \"${var.install_dir}/images/${basename(var.docker_installer)}\"",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
@@ -207,6 +210,7 @@ resource "null_resource" "icp-management" {
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/comment_localhost.sh",
       "/tmp/icp-common-scripts/enable_firewall.sh ${var.firewall_enabled}",
       "sudo /tmp/icp-common-scripts/download_docker.sh \"${var.icp_source_server}\" \"${var.icp_source_user}\" \"${var.icp_source_password}\" \"${var.docker_installer}\" \"${var.install_dir}/images/${basename(var.docker_installer)}\"",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
@@ -259,6 +263,7 @@ resource "null_resource" "icp-va" {
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/comment_localhost.sh",
       "/tmp/icp-common-scripts/enable_firewall.sh ${var.firewall_enabled}",
       "sudo /tmp/icp-common-scripts/download_docker.sh \"${var.icp_source_server}\" \"${var.icp_source_user}\" \"${var.icp_source_password}\" \"${var.docker_installer}\" \"${var.install_dir}/images/${basename(var.docker_installer)}\"",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
@@ -311,6 +316,7 @@ resource "null_resource" "icp-worker" {
       "cat /tmp/icpkey >> ~/.ssh/authorized_keys",
       "chmod a+x /tmp/icp-common-scripts/*",
       "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/comment_localhost.sh",
       "/tmp/icp-common-scripts/enable_firewall.sh ${var.firewall_enabled}",
       "sudo /tmp/icp-common-scripts/download_docker.sh \"${var.icp_source_server}\" \"${var.icp_source_user}\" \"${var.icp_source_password}\" \"${var.docker_installer}\" \"${var.install_dir}/images/${basename(var.docker_installer)}\"",
       "/tmp/icp-common-scripts/version-specific.sh ${var.icp-version}",
@@ -372,7 +378,6 @@ resource "null_resource" "icp-boot" {
       "sudo chown -R ${var.ssh_user} ${var.install_dir}/*",
       "chmod 600 ${var.install_dir}/ssh_key",
       "python /tmp/icp-bootmaster-scripts/load-config.py ${var.config_strategy}",
-      "sudo sed -i s/^127.0.0.1/#127.0.0.1/ /etc/hosts"
     ]
   }
   # Copy the provided or generated private key - order must be after remote exec code above
@@ -572,9 +577,10 @@ resource "null_resource" "create_gluster" {
     bastion_private_key = "${var.bastion_private_key}"
   }
   provisioner "file" {
-    source      = "${path.module}/scripts/common/prereqs.sh"
-    destination = "/tmp/prereqs.sh"
+    source      = "${path.module}/scripts/common/"
+    destination = "/tmp/icp-common-scripts"
   }
+  
   provisioner "file" {
     source      = "${path.module}/scripts/gluster/creategluster.sh"
     destination = "/tmp/creategluster.sh"
@@ -583,7 +589,9 @@ resource "null_resource" "create_gluster" {
     inline = [
       "sudo mkdir /root/.ssh && sudo chmod 700 /root/.ssh",
       "echo \"${tls_private_key.heketikey.public_key_openssh}\" | sudo tee -a /root/.ssh/authorized_keys && sudo chmod 600 /root/.ssh/authorized_keys",
-      "chmod +x /tmp/prereqs.sh && /tmp/prereqs.sh",
+      "chmod a+x /tmp/icp-common-scripts/*",
+      "/tmp/icp-common-scripts/prereqs.sh",
+      "/tmp/icp-common-scripts/comment_localhost.sh",
       "/tmp/icp-common-scripts/enable_firewall.sh",
       "chmod +x /tmp/creategluster.sh && /tmp/creategluster.sh",
       "echo Installation of Gluster is Completed",
