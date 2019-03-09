@@ -576,6 +576,13 @@ resource "null_resource" "create_gluster" {
     bastion_user        = "${var.bastion_user}"
     bastion_private_key = "${var.bastion_private_key}"
   }
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /tmp/icp-common-scripts",
+    ]
+  }
+
   provisioner "file" {
     source      = "${path.module}/scripts/common/"
     destination = "/tmp/icp-common-scripts"
